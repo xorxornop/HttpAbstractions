@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Http.Internal
     /// </summary>
     public class HeaderDictionary : IHeaderDictionary
     {
-        public HeaderDictionary() : this(new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase))
+        public HeaderDictionary() : this(new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase))
         {
         }
 
@@ -23,12 +23,12 @@ namespace Microsoft.AspNet.Http.Internal
         /// Initializes a new instance of the <see cref="T:Microsoft.Owin.HeaderDictionary" /> class.
         /// </summary>
         /// <param name="store">The underlying data store.</param>
-        public HeaderDictionary([NotNull] IDictionary<string, string[]> store)
+        public HeaderDictionary([NotNull] IDictionary<string, StringValues> store)
         {
             Store = store;
         }
 
-        private IDictionary<string, string[]> Store { get; set; }
+        private IDictionary<string, StringValues> Store { get; set; }
 
         /// <summary>
         /// Gets an <see cref="T:System.Collections.ICollection" /> that contains the keys in the <see cref="T:Microsoft.Owin.HeaderDictionary" />;.
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// <summary>
         /// 
         /// </summary>
-        public ICollection<string[]> Values
+        public ICollection<StringValues> Values
         {
             get { return Store.Values; }
         }
@@ -69,11 +69,11 @@ namespace Microsoft.AspNet.Http.Internal
         /// Get or sets the associated value from the collection as a single string.
         /// </summary>
         /// <param name="key">The header name.</param>
-        /// <returns>the associated value from the collection as a single string or null if the key is not present.</returns>
-        public string this[string key]
+        /// <returns>the associated value from the collection as a single string or StringValues.Empty if the key is not present.</returns>
+        public StringValues this[string key]
         {
-            get { return Get(key); }
-            set { Set(key, value); }
+            get { return ParsingHelpers.GetHeader(Store, key); }
+            set { ParsingHelpers.SetHeader(Store, key, value); }
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <returns></returns>
-        string[] IDictionary<string, string[]>.this[string key]
+        StringValues IDictionary<string, StringValues>.this[string key]
         {
             get { return Store[key]; }
             set { Store[key] = value; }
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
-        public IEnumerator<KeyValuePair<string, string[]>> GetEnumerator()
+        IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
         {
             return Store.GetEnumerator();
         }
@@ -102,28 +102,9 @@ namespace Microsoft.AspNet.Http.Internal
         /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return Store.GetEnumerator();
         }
 
-        /// <summary>
-        /// Get the associated value from the collection as a single string.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <returns>the associated value from the collection as a single string or null if the key is not present.</returns>
-        public string Get(string key)
-        {
-            return ParsingHelpers.GetHeader(Store, key);
-        }
-
-        /// <summary>
-        /// Get the associated values from the collection without modification.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <returns>the associated value from the collection without modification, or null if the key is not present.</returns>
-        public IList<string> GetValues(string key)
-        {
-            return ParsingHelpers.GetHeaderUnmodified(Store, key);
-        }
 
         /// <summary>
         /// Get the associated values from the collection separated into individual values.
@@ -131,10 +112,9 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <returns>the associated values from the collection separated into individual values, or null if the key is not present.</returns>
-        public IList<string> GetCommaSeparatedValues(string key)
+        public StringValues GetCommaSeparatedValues(string key)
         {
-            IEnumerable<string> values = ParsingHelpers.GetHeaderSplit(Store, key);
-            return values == null ? null : values.ToList();
+            return ParsingHelpers.GetHeaderSplit(Store, key);
         }
 
         /// <summary>
@@ -142,19 +122,9 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <param name="value">The header value.</param>
-        public void Append(string key, string value)
+        public void Append(string key, StringValues value)
         {
             ParsingHelpers.AppendHeader(Store, key, value);
-        }
-
-        /// <summary>
-        /// Add new values. Each item remains a separate array entry.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="values">The header values.</param>
-        public void AppendValues(string key, params string[] values)
-        {
-            ParsingHelpers.AppendHeaderUnmodified(Store, key, values);
         }
 
         /// <summary>
@@ -165,26 +135,6 @@ namespace Microsoft.AspNet.Http.Internal
         public void AppendCommaSeparatedValues(string key, params string[] values)
         {
             ParsingHelpers.AppendHeaderJoined(Store, key, values);
-        }
-
-        /// <summary>
-        /// Sets a specific header value.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="value">The header value.</param>
-        public void Set(string key, string value)
-        {
-            ParsingHelpers.SetHeader(Store, key, value);
-        }
-
-        /// <summary>
-        /// Sets the specified header values without modification.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="values">The header values.</param>
-        public void SetValues(string key, params string[] values)
-        {
-            ParsingHelpers.SetHeaderUnmodified(Store, key, values);
         }
 
         /// <summary>
@@ -202,7 +152,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <param name="value">The header values.</param>
-        public void Add(string key, string[] value)
+        public void Add(string key, StringValues value)
         {
             Store.Add(key, value);
         }
@@ -233,7 +183,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// <param name="key">The header name.</param>
         /// <param name="value">The value.</param>
         /// <returns>true if the <see cref="T:Microsoft.Owin.HeaderDictionary" /> contains the key; otherwise, false.</returns>
-        public bool TryGetValue(string key, out string[] value)
+        public bool TryGetValue(string key, out StringValues value)
         {
             return Store.TryGetValue(key, out value);
         }
@@ -242,7 +192,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// Adds a new list of items to the collection.
         /// </summary>
         /// <param name="item">The item to add.</param>
-        public void Add(KeyValuePair<string, string[]> item)
+        public void Add(KeyValuePair<string, StringValues> item)
         {
             Store.Add(item);
         }
@@ -260,7 +210,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>true if the specified object occurs within this collection; otherwise, false.</returns>
-        public bool Contains(KeyValuePair<string, string[]> item)
+        public bool Contains(KeyValuePair<string, StringValues> item)
         {
             return Store.Contains(item);
         }
@@ -270,7 +220,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="array">The one-dimensional Array that is the destination of the specified objects copied from the <see cref="T:Microsoft.Owin.HeaderDictionary" />.</param>
         /// <param name="arrayIndex">The zero-based index in <paramref name="array" /> at which copying begins.</param>
-        public void CopyTo(KeyValuePair<string, string[]>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
             Store.CopyTo(array, arrayIndex);
         }
@@ -280,7 +230,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>true if the specified object was removed from the collection; otherwise, false.</returns>
-        public bool Remove(KeyValuePair<string, string[]> item)
+        public bool Remove(KeyValuePair<string, StringValues> item)
         {
             return Store.Remove(item);
         }

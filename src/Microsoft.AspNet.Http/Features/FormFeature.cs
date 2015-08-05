@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
 using Microsoft.Net.Http.Headers;
+using System.Linq;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
@@ -109,9 +110,9 @@ namespace Microsoft.AspNet.Http.Features.Internal
                     var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
                     while (section != null)
                     {
-                        var headers = new HeaderDictionary(section.Headers);
+                        IHeaderDictionary headers = new HeaderDictionary(section.Headers.ToDictionary(kv => kv.Key, kv => (StringValues)kv.Value));
                         ContentDispositionHeaderValue contentDisposition;
-                        ContentDispositionHeaderValue.TryParse(headers.Get(HeaderNames.ContentDisposition), out contentDisposition);
+                        ContentDispositionHeaderValue.TryParse(headers[HeaderNames.ContentDisposition], out contentDisposition);
                         if (HasFileContentDisposition(contentDisposition))
                         {
                             // Find the end
@@ -131,7 +132,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
                             var key = HeaderUtilities.RemoveQuotes(contentDisposition.Name);
                             MediaTypeHeaderValue mediaType;
-                            MediaTypeHeaderValue.TryParse(headers.Get(HeaderNames.ContentType), out mediaType);
+                            MediaTypeHeaderValue.TryParse(headers[HeaderNames.ContentType], out mediaType);
                             var encoding = FilterEncoding(mediaType?.Encoding);
                             using (var reader = new StreamReader(section.Body, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
                             {
@@ -141,7 +142,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                         }
                         else
                         {
-                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + headers.Get(HeaderNames.ContentDisposition));
+                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + headers[HeaderNames.ContentDisposition]);
                         }
 
                         section = await multipartReader.ReadNextSectionAsync(cancellationToken);
@@ -151,7 +152,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                 }
             }
 
-            Form = new FormCollection(formFields, files);
+            Form = new FormCollection(formFields.ToDictionary(kv => kv.Key, kv => (StringValues)kv.Value), files);
             return Form;
         }
 

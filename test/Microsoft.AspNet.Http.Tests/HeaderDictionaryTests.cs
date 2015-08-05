@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Http.Internal
         public void PropertiesAreAccessible()
         {
             var headers = new HeaderDictionary(
-                new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+                new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "Header1", new[] { "Value1" } }
                 });
@@ -23,8 +23,7 @@ namespace Microsoft.AspNet.Http.Internal
             Assert.True(headers.ContainsKey("header1"));
             Assert.False(headers.ContainsKey("header2"));
             Assert.Equal("Value1", headers["header1"]);
-            Assert.Equal("Value1", headers.Get("header1"));
-            Assert.Equal(new[] { "Value1" }, headers.GetValues("header1"));
+            Assert.Equal(new[] { "Value1" }, (string[])headers["header1"]);
         }
     }
 }

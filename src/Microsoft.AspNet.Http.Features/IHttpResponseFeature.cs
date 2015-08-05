@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Http.Features
     {
         int StatusCode { get; set; }
         string ReasonPhrase { get; set; }
-        IDictionary<string, string[]> Headers { get; set; }
+        IDictionary<string, StringValues> Headers { get; set; }
         Stream Body { get; set; }
         bool HasStarted { get; }
         void OnStarting(Func<object, Task> callback, object state);

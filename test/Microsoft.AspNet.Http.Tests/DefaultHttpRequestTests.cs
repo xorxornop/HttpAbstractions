@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Http.Internal
             // Arrange
             const string expected = "localhost:9001";
 
-            var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+            var headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Host", new string[] { expected } },
             };
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Http.Internal
             // Arrange
             const string expected = "löcalhöst";
 
-            var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+            var headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
             {
                 { "Host", new string[]{ "xn--lcalhst-90ae" } },
             };
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Http.Internal
             // Arrange
             const string expected = "xn--lcalhst-90ae";
 
-            var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            var headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
 
             var request = CreateRequest(headers);
 
@@ -149,45 +149,45 @@ namespace Microsoft.AspNet.Http.Internal
             Assert.Equal("value0", query1["name0"]);
             Assert.Equal("value1", query1["name1"]);
 
-            var query2 = new ReadableStringCollection(new Dictionary<string, string[]>()
+            var query2 = new ReadableStringCollection(new Dictionary<string, StringValues>()
             {
-                { "name2", new[] { "value2" } }
+                { "name2", "value2" }
             });
 
             request.Query = query2;
             Assert.Same(query2, request.Query);
-            Assert.Equal("?name2=value2", requestFeature.QueryString);
-            Assert.Equal(new QueryString("?name2=value2"), request.QueryString);
+            Assert.Equal("?name0=value0&name1=value1", requestFeature.QueryString);
+            Assert.Equal(new QueryString("?name0=value0&name1=value1"), request.QueryString);
         }
 
         [Fact]
         public void Cookies_GetAndSet()
         {
             var request = new DefaultHttpContext().Request;
-            var cookieHeaders = request.Headers.GetValues("Cookie");
-            Assert.Null(cookieHeaders);
+            var cookieHeaders = request.Headers["Cookie"];
+            Assert.Equal(0, cookieHeaders.Count);
             var cookies0 = request.Cookies;
             Assert.Equal(0, cookies0.Count);
 
-            request.Headers.SetValues("Cookie", new[] { "name0=value0", "name1=value1" });
+            request.Headers["Cookie"] = new[] { "name0=value0", "name1=value1" };
             var cookies1 = request.Cookies;
             Assert.Same(cookies0, cookies1);
             Assert.Equal(2, cookies1.Count);
             Assert.Equal("value0", cookies1["name0"]);
             Assert.Equal("value1", cookies1["name1"]);
 
-            var cookies2 = new ReadableStringCollection(new Dictionary<string, string[]>()
+            var cookies2 = new ReadableStringCollection(new Dictionary<string, StringValues>()
             {
-                { "name2", new[] { "value2" } }
+                { "name2", "value2" }
             });
             request.Cookies = cookies2;
             Assert.Same(cookies2, request.Cookies);
             Assert.Equal("value2", request.Cookies["name2"]);
-            cookieHeaders = request.Headers.GetValues("Cookie");
-            Assert.Equal(new[] { "name2=value2" }, cookieHeaders);
+            cookieHeaders = request.Headers["Cookie"];
+            Assert.Equal(new[] { "name0=value0", "name1=value1" }, cookieHeaders);
         }
 
-        private static HttpRequest CreateRequest(IDictionary<string, string[]> headers)
+        private static HttpRequest CreateRequest(IDictionary<string, StringValues> headers)
         {
             var context = new DefaultHttpContext();
             context.GetFeature<IHttpRequestFeature>().Headers = headers;
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         private static HttpRequest GetRequestWithHeader(string headerName, string headerValue)
         {
-            var headers = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+            var headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
             if (headerValue != null)
             {
                 headers.Add(headerName, new[] { headerValue });

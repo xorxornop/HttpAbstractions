@@ -3,20 +3,22 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Http
 {
     /// <summary>
     /// Represents request and response headers
     /// </summary>
-    public interface IHeaderDictionary : IReadableStringCollection, IDictionary<string, string[]>
+    public interface IHeaderDictionary : IReadableStringCollection, IDictionary<string, StringValues>
     {
+        // This property is duplicated to resolve an ambiguity between IReadableStringCollection and IDictionary<string, string[]>
         /// <summary>
-        /// Get or sets the associated value from the collection as a single string.
+        /// 
         /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <returns>the associated value from the collection as a single string or null if the key is not present.</returns>
-        new string this[string key] { get; set; }
+        /// <param name="key"></param>
+        /// <returns></returns>
+        new StringValues this[string key] { get; set; }
 
         // This property is duplicated to resolve an ambiguity between IReadableStringCollection.Count and IDictionary<string, string[]>.Count
         /// <summary>
@@ -36,21 +38,14 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <returns>the associated values from the collection separated into individual values, or null if the key is not present.</returns>
-        IList<string> GetCommaSeparatedValues(string key);
+        StringValues GetCommaSeparatedValues(string key);
 
         /// <summary>
         /// Add a new value. Appends to the header if already present
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <param name="value">The header value.</param>
-        void Append(string key, string value);
-
-        /// <summary>
-        /// Add new values. Each item remains a separate array entry.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="values">The header values.</param>
-        void AppendValues(string key, params string[] values);
+        void Append(string key, StringValues value);
 
         /// <summary>
         /// Quotes any values containing comas, and then coma joins all of the values with any existing values.
@@ -58,22 +53,7 @@ namespace Microsoft.AspNet.Http
         /// <param name="key">The header name.</param>
         /// <param name="values">The header values.</param>
         void AppendCommaSeparatedValues(string key, params string[] values);
-
-        /// <summary>
-        /// Sets a specific header value.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="value">The header value.</param>
-        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Set", Justification = "Re-evaluate later.")]
-        void Set(string key, string value);
-
-        /// <summary>
-        /// Sets the specified header values without modification.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="values">The header values.</param>
-        void SetValues(string key, params string[] values);
-
+        
         /// <summary>
         /// Quotes any values containing comas, and then coma joins all of the values.
         /// </summary>

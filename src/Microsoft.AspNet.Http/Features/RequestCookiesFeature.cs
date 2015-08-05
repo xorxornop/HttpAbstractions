@@ -14,19 +14,10 @@ namespace Microsoft.AspNet.Http.Features.Internal
     {
         private readonly IFeatureCollection _features;
         private readonly FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
-        private string[] _cookieHeaders;
-        private RequestCookiesCollection _cookiesCollection;
-        private IReadableStringCollection _cookies;
 
-        public RequestCookiesFeature([NotNull] IDictionary<string, string[]> cookies)
-            : this (new ReadableStringCollection(cookies))
-        {
-        }
-
-        public RequestCookiesFeature([NotNull] IReadableStringCollection cookies)
-        {
-            _cookies = cookies;
-        }
+        private StringValues _original;
+        private RequestCookiesCollection _created;
+        private IReadableStringCollection _assigned;
 
         public RequestCookiesFeature([NotNull] IFeatureCollection features)
         {
@@ -37,48 +28,39 @@ namespace Microsoft.AspNet.Http.Features.Internal
         {
             get
             {
-                if (_features == null)
+                if (_assigned != null)
                 {
-                    return _cookies;
+                    return _assigned;
                 }
 
                 var headers = _request.Fetch(_features).Headers;
-                string[] values;
-                if (!headers.TryGetValue(HeaderNames.Cookie, out values))
+                StringValues current;
+                if (!headers.TryGetValue(HeaderNames.Cookie, out current))
                 {
-                    values = new string[0];
+                    current = StringValues.Empty;
                 }
 
-                if (_cookieHeaders == null || !Enumerable.SequenceEqual(_cookieHeaders, values, StringComparer.Ordinal))
+                if (_created == null || !Enumerable.SequenceEqual(_original, current, StringComparer.Ordinal))
                 {
-                    _cookieHeaders = values;
-                    if (_cookiesCollection == null)
+                    _original = current;
+                    if (_created == null)
                     {
-                        _cookiesCollection = new RequestCookiesCollection();
-                        _cookies = _cookiesCollection;
+                        _created = new RequestCookiesCollection();
                     }
-                    _cookiesCollection.Reparse(values);
+                    _created.Reparse(current);
                 }
 
-                return _cookies;
+                return _created;
             }
             set
             {
-                _cookies = value;
-                _cookieHeaders = null;
-                _cookiesCollection = _cookies as RequestCookiesCollection;
-                if (_cookies != null && _features != null)
+                if (ReferenceEquals(_created, value))
                 {
-                    var headers = new List<string>();
-                    foreach (var pair in _cookies)
-                    {
-                        foreach (var cookieValue in pair.Value)
-                        {
-                            headers.Add(new CookieHeaderValue(pair.Key, cookieValue).ToString());
-                        }
-                    }
-                    _cookieHeaders = headers.ToArray();
-                    _request.Fetch(_features).Headers[HeaderNames.Cookie] = _cookieHeaders;
+                    _assigned = null;
+                }
+                else
+                {
+                    _assigned = value;
                 }
             }
         }

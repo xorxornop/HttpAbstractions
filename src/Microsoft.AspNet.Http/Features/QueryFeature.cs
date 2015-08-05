@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.Internal;
+using System.Linq;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
@@ -13,18 +14,10 @@ namespace Microsoft.AspNet.Http.Features.Internal
     {
         private readonly IFeatureCollection _features;
         private FeatureReference<IHttpRequestFeature> _request = FeatureReference<IHttpRequestFeature>.Default;
-        private string _queryString;
-        private IReadableStringCollection _query;
 
-        public QueryFeature([NotNull] IDictionary<string, string[]> query)
-            : this (new ReadableStringCollection(query))
-        {
-        }
-
-        public QueryFeature([NotNull] IReadableStringCollection query)
-        {
-            _query = query;
-        }
+        private string _original;
+        private IReadableStringCollection _created;
+        private IReadableStringCollection _assigned;
 
         public QueryFeature([NotNull] IFeatureCollection features)
         {
@@ -35,26 +28,28 @@ namespace Microsoft.AspNet.Http.Features.Internal
         {
             get
             {
-                if (_features == null)
+                if (_assigned != null)
                 {
-                    return _query;
+                    return _assigned;
                 }
 
-                var queryString = _request.Fetch(_features).QueryString;
-                if (_query == null || !string.Equals(_queryString, queryString, StringComparison.Ordinal))
+                var current = _request.Fetch(_features).QueryString;
+                if (_created == null || !string.Equals(_original, current, StringComparison.Ordinal))
                 {
-                    _queryString = queryString;
-                    _query = new ReadableStringCollection(QueryHelpers.ParseQuery(queryString));
+                    _original = current;
+                    _created = new ReadableStringCollection(QueryHelpers.ParseQuery(current).ToDictionary(kv => kv.Key, kv => (StringValues)kv.Value));
                 }
-                return _query;
+                return _created;
             }
             set
             {
-                _query = value;
-                if (_features != null)
+                if (ReferenceEquals(_created, value))
                 {
-                    _queryString = _query == null ? string.Empty : QueryString.Create(_query).ToString();
-                    _request.Fetch(_features).QueryString = _queryString;
+                    _assigned = null;
+                }
+                else
+                {
+                    _assigned = value;
                 }
             }
         }

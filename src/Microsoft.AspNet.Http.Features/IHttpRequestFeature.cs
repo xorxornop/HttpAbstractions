@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Http.Features
         string PathBase { get; set; }
         string Path { get; set; }
         string QueryString { get; set; }
-        IDictionary<string, string[]> Headers { get; set; }
+        IDictionary<string, StringValues> Headers { get; set; }
         Stream Body { get; set; }
     }
 }

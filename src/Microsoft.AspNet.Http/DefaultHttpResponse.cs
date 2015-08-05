@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Http.Internal
                 HttpResponseFeature.StatusCode = 302;
             }
 
-            Headers.Set(HeaderNames.Location, location);
+            Headers[HeaderNames.Location] = location;
         }
     }
 }

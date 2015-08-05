@@ -20,6 +20,7 @@ using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Owin
 {
+    using Http;
     using SendFileFunc = Func<string, long, long?, CancellationToken, Task>;
 
     public class OwinFeatureCollection :
@@ -105,10 +106,10 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.RequestQueryString, Utilities.RemoveQuestionMark(value)); }
         }
 
-        IDictionary<string, string[]> IHttpRequestFeature.Headers
+        IDictionary<string, StringValues> IHttpRequestFeature.Headers
         {
-            get { return Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders); }
-            set { Prop(OwinConstants.RequestHeaders, value); }
+            get { return Utilities.MakeDictionaryStringValues(Prop<IDictionary<string, string[]>>(OwinConstants.RequestHeaders)); }
+            set { Prop(OwinConstants.RequestHeaders, Utilities.MakeDictionaryStringArray(value)); }
         }
 
         Stream IHttpRequestFeature.Body
@@ -129,10 +130,10 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.ResponseReasonPhrase, value); }
         }
 
-        IDictionary<string, string[]> IHttpResponseFeature.Headers
+        IDictionary<string, StringValues> IHttpResponseFeature.Headers
         {
-            get { return Prop<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders); }
-            set { Prop(OwinConstants.ResponseHeaders, value); }
+            get { return Utilities.MakeDictionaryStringValues(Prop<IDictionary<string, string[]>>(OwinConstants.ResponseHeaders)); }
+            set { Prop(OwinConstants.ResponseHeaders, Utilities.MakeDictionaryStringArray(value)); }
         }
 
         Stream IHttpResponseFeature.Body
