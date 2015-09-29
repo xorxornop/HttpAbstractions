@@ -15,6 +15,10 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public abstract Task AuthenticateAsync(AuthenticateContext context);
 
+        public abstract Task ChallengeAsync(ChallengeContext context);
+
+        public abstract Task SignInAsync(SignInContext context);
+
         public virtual async Task<ClaimsPrincipal> AuthenticateAsync(string authenticationScheme)
         {
             if (authenticationScheme == null)
@@ -29,7 +33,7 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public virtual Task ChallengeAsync()
         {
-            return ChallengeAsync(properties: null);
+            return ChallengeAsync(string.Empty);
         }
 
         public virtual Task ChallengeAsync(AuthenticationProperties properties)
@@ -39,26 +43,27 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public virtual Task ChallengeAsync(string authenticationScheme)
         {
-            if (authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
-            return ChallengeAsync(authenticationScheme: authenticationScheme, properties: null);
+            return ChallengeAsync(authenticationScheme, properties: null);
         }
 
         // Leave it up to authentication handler to do the right thing for the challenge
         public virtual Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties)
         {
-            if (authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
             return ChallengeAsync(authenticationScheme, properties, ChallengeBehavior.Automatic);
         }
 
+        public virtual Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
+        {
+            return ChallengeAsync(new ChallengeContext(authenticationScheme, properties?.Items, behavior));
+        }
+
+
         public virtual Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal)
+        {
+            return SignInAsync(authenticationScheme, principal, properties: null);
+        }
+
+        public virtual Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
             if (authenticationScheme == null)
             {
@@ -70,16 +75,11 @@ namespace Microsoft.AspNet.Http.Authentication
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            return SignInAsync(authenticationScheme, principal, properties: null);
+            return SignInAsync(new SignInContext(authenticationScheme, principal, properties?.Items));
         }
 
         public virtual Task ForbidAsync(string authenticationScheme)
         {
-            if (authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
             return ForbidAsync(authenticationScheme, properties: null);
         }
 
@@ -91,23 +91,24 @@ namespace Microsoft.AspNet.Http.Authentication
                 throw new ArgumentNullException(nameof(authenticationScheme));
             }
 
-            return ChallengeAsync(authenticationScheme, properties, ChallengeBehavior.Forbidden);
+            return ChallengeAsync(new ChallengeContext(authenticationScheme, properties?.Items, ChallengeBehavior.Forbidden));
         }
 
-        public abstract Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior);
-
-        public abstract Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties);
-
         public virtual Task SignOutAsync(string authenticationScheme)
+        {
+            return SignOutAsync(authenticationScheme, properties: null);
+        }
+
+        public virtual Task SignOutAsync(string authenticationScheme, AuthenticationProperties properties)
         {
             if (authenticationScheme == null)
             {
                 throw new ArgumentNullException(nameof(authenticationScheme));
             }
 
-            return SignOutAsync(authenticationScheme, properties: null);
+            return SignOutAsync(new SignOutContext(authenticationScheme, properties?.Items));
         }
 
-        public abstract Task SignOutAsync(string authenticationScheme, AuthenticationProperties properties);
+        public abstract Task SignOutAsync(SignOutContext context);
     }
 }

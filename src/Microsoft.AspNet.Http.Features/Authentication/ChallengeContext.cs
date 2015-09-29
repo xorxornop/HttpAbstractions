@@ -15,11 +15,6 @@ namespace Microsoft.AspNet.Http.Features.Authentication
 
         public ChallengeContext(string authenticationScheme, IDictionary<string, string> properties, ChallengeBehavior behavior)
         {
-            if (authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
             AuthenticationScheme = authenticationScheme;
             Properties = properties ?? new Dictionary<string, string>(StringComparer.Ordinal);
             Behavior = behavior;
@@ -36,6 +31,13 @@ namespace Microsoft.AspNet.Http.Features.Authentication
         public void Accept()
         {
             Accepted = true;
+        }
+
+        public bool IsRequestCompleted { get; private set; }
+
+        public void CompleteRequest()
+        {
+            IsRequestCompleted = true;
         }
     }
 }

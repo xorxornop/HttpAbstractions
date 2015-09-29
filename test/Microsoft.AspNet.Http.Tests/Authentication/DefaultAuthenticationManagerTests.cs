@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             Assert.False(handler.SignedIn);
             await context.Authentication.SignInAsync("ignored", user);
             Assert.True(handler.SignedIn);
-            await context.Authentication.SignOutAsync("ignored", new AuthenticationProperties() { RedirectUri = "~/logout" });
+            await context.Authentication.SignOutAsync(new SignOutContext("ignored", new AuthenticationProperties() { RedirectUri = "~/logout" }.Items));
             Assert.False(handler.SignedIn);
         }
 
