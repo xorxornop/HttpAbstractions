@@ -29,12 +29,5 @@ namespace Microsoft.AspNet.Http.Features.Authentication
         {
             Accepted = true;
         }
-
-        public bool IsRequestCompleted { get; private set; }
-
-        public void CompleteRequest()
-        {
-            IsRequestCompleted = true;
-        }
     }
 }

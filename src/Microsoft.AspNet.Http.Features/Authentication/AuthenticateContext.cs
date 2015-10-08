@@ -29,6 +29,8 @@ namespace Microsoft.AspNet.Http.Features.Authentication
 
         public IDictionary<string, object> Description { get; private set; }
 
+        public Exception Error { get; private set; }
+
         public virtual void Authenticated(ClaimsPrincipal principal, IDictionary<string, string> properties, IDictionary<string, object> description)
         {
             Accepted = true;
@@ -42,11 +44,17 @@ namespace Microsoft.AspNet.Http.Features.Authentication
             Accepted = true;
         }
 
-        public bool IsRequestCompleted { get; private set; }
-
-        public void CompleteRequest()
+        public virtual void Failed(Exception error)
         {
-            IsRequestCompleted = true;
+            Error = error;
+            Accepted = true;
         }
+
+        //public bool IsRequestCompleted { get; private set; }
+
+        //public void CompleteRequest()
+        //{
+        //    IsRequestCompleted = true;
+        //}
     }
 }
