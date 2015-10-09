@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
@@ -65,61 +66,71 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
             }
         }
 
-        public override async Task ChallengeAsync(ChallengeContext context)
+        public override async Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
         {
-            if (context == null)
+            if (authenticationScheme == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(authenticationScheme));
             }
 
             var handler = HttpAuthenticationFeature.Handler;
 
+            var challengeContext = new ChallengeContext(authenticationScheme, properties?.Items, behavior);
             if (handler != null)
             {
-                await handler.ChallengeAsync(context);
+                await handler.ChallengeAsync(challengeContext);
             }
 
-            if (!context.Accepted)
+            if (!challengeContext.Accepted)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to handle a challenge for the scheme: {context.AuthenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle a challenge for the scheme: {challengeContext.AuthenticationScheme}");
             }
         }
 
-        public override async Task SignInAsync(SignInContext context)
+        public override async Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
-            if (context == null)
+            if (authenticationScheme == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
             }
 
             var handler = HttpAuthenticationFeature.Handler;
+
+            var signInContext = new SignInContext(authenticationScheme, principal, properties?.Items);
             if (handler != null)
             {
-                await handler.SignInAsync(context);
+                await handler.SignInAsync(signInContext);
             }
 
-            if (!context.Accepted)
+            if (!signInContext.Accepted)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to handle a sign in for the scheme: {context.AuthenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle a sign in for the scheme: {signInContext.AuthenticationScheme}");
             }
         }
 
-        public override async Task SignOutAsync(SignOutContext context)
+        public override async Task SignOutAsync(string authenticationScheme, AuthenticationProperties properties)
         {
-            if (context == null)
+            if (authenticationScheme == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(authenticationScheme));
             }
 
             var handler = HttpAuthenticationFeature.Handler;
+
+            var signOutContext = new SignOutContext(authenticationScheme, properties?.Items);
             if (handler != null)
             {
-                await handler.SignOutAsync(context);
+                await handler.SignOutAsync(signOutContext);
             }
 
-            if (!context.Accepted)
+            if (!signOutContext.Accepted)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to handle sign out for the scheme: {context.AuthenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle sign out for the scheme: {signOutContext.AuthenticationScheme}");
             }
         }
     }
