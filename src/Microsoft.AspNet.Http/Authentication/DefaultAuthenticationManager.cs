@@ -110,8 +110,7 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
 
             if (!signInContext.Accepted)
             {
-                var scheme = string.IsNullOrEmpty(authenticationScheme) ? "<automatic>" : authenticationScheme;
-                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {authenticationScheme}");
             }
         }
 
@@ -132,8 +131,7 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
 
             if (!signOutContext.Accepted)
             {
-                var scheme = string.IsNullOrEmpty(authenticationScheme) ? "<automatic>" : authenticationScheme;
-                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {authenticationScheme}");
             }
         }
     }
