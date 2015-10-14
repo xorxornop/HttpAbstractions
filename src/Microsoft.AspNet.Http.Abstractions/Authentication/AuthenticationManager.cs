@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Http.Authentication
         /// <summary>
         /// Constant used to represent the automatic scheme
         /// </summary>
-        public const string AutomaticScheme = "(_automatic_)";
+        public const string AutomaticScheme = "Automatic";
 
         public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
 
@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public virtual Task ChallengeAsync(string authenticationScheme)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             return ChallengeAsync(authenticationScheme: authenticationScheme, properties: null);
@@ -55,9 +55,9 @@ namespace Microsoft.AspNet.Http.Authentication
         // Leave it up to authentication handler to do the right thing for the challenge
         public virtual Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             return ChallengeAsync(authenticationScheme, properties, ChallengeBehavior.Automatic);
@@ -65,9 +65,9 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public virtual Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal)
         {
-            if (authenticationScheme == null)
+            if (string.IsNullOrEmpty(authenticationScheme))
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(authenticationScheme));
             }
 
             if (principal == null)
