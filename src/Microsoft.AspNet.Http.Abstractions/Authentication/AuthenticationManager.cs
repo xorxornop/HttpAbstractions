@@ -11,6 +11,11 @@ namespace Microsoft.AspNet.Http.Authentication
 {
     public abstract class AuthenticationManager
     {
+        /// <summary>
+        /// Constant used to represent the automatic scheme
+        /// </summary>
+        public const string AutomaticScheme = "(_automatic_)";
+
         public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
 
         public abstract Task AuthenticateAsync(AuthenticateContext context);
@@ -34,7 +39,7 @@ namespace Microsoft.AspNet.Http.Authentication
 
         public virtual Task ChallengeAsync(AuthenticationProperties properties)
         {
-            return ChallengeAsync(authenticationScheme: string.Empty, properties: properties);
+            return ChallengeAsync(authenticationScheme: AutomaticScheme, properties: properties);
         }
 
         public virtual Task ChallengeAsync(string authenticationScheme)
