@@ -20,18 +20,11 @@ namespace Microsoft.AspNetCore.Http.Authentication
 
         public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
 
-        public abstract Task AuthenticateAsync(AuthenticateContext context);
+        public abstract Task<AuthenticateInfo> GetAuthenticateInfoAsync(string authenticationScheme);
 
         public virtual async Task<ClaimsPrincipal> AuthenticateAsync(string authenticationScheme)
         {
-            if (authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
-            var context = new AuthenticateContext(authenticationScheme);
-            await AuthenticateAsync(context);
-            return context.Principal;
+            return (await GetAuthenticateInfoAsync(authenticationScheme))?.Principal;
         }
 
         public virtual Task ChallengeAsync()

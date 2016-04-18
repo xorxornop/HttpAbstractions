@@ -50,14 +50,15 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
             return describeContext.Results.Select(description => new AuthenticationDescription(description));
         }
 
-        public override async Task AuthenticateAsync(AuthenticateContext context)
+        public override async Task<AuthenticateInfo> GetAuthenticateInfoAsync(string authenticationScheme)
         {
-            if (context == null)
+            if (authenticationScheme == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(authenticationScheme));
             }
 
             var handler = HttpAuthenticationFeature.Handler;
+            var context = new AuthenticateContext(authenticationScheme);
             if (handler != null)
             {
                 await handler.AuthenticateAsync(context);
@@ -67,6 +68,12 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
             {
                 throw new InvalidOperationException($"No authentication handler is configured to authenticate for the scheme: {context.AuthenticationScheme}");
             }
+
+            return new AuthenticateInfo
+            {
+                Principal = context.Principal,
+                Properties = new AuthenticationProperties(context.Properties)
+            };
         }
 
         public override async Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
