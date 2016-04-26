@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Http.Authentication
 
         public abstract Task<AuthenticateInfo> GetAuthenticateInfoAsync(string authenticationScheme);
 
+        // Will remove once callees have been updated
+        public abstract Task AuthenticateAsync(AuthenticateContext context);
+
         public virtual async Task<ClaimsPrincipal> AuthenticateAsync(string authenticationScheme)
         {
             return (await GetAuthenticateInfoAsync(authenticationScheme))?.Principal;
