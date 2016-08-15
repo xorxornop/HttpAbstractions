@@ -41,7 +41,7 @@ namespace SampleApp
 
             var responseCookiesFeature = new ResponseCookiesFeature(featureCollection, _builderPool);
             featureCollection.Set<IResponseCookiesFeature>(responseCookiesFeature);
-
+            featureCollection.Get<IPooled>()
             PooledHttpContext httpContext = null;
             lock (_pool)
             {
