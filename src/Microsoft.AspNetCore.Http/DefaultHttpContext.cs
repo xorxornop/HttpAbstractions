@@ -4,17 +4,21 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Authentication.Internal;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpContext : HttpContext
     {
+        private readonly FormOptions _formOptions;
+        private readonly ObjectPool<StringBuilder> _builderPool;
         private FeatureReferences<FeatureInterfaces> _features;
 
         private HttpRequest _request;
@@ -22,6 +26,8 @@ namespace Microsoft.AspNetCore.Http
         private AuthenticationManager _authenticationManager;
         private ConnectionInfo _connection;
         private WebSocketManager _websockets;
+        private static readonly Func<object, IResponseCookiesFeature> CreateResponseCookiesFeatureDelagate = CreateResponseCookiesFeature;
+        private static readonly Func<object, IFormFeature> CreateFormFeatureDelegate = CreateFormFeature;
 
         public DefaultHttpContext()
             : this(new FeatureCollection())
@@ -35,11 +41,32 @@ namespace Microsoft.AspNetCore.Http
             Initialize(features);
         }
 
+        public DefaultHttpContext(IFeatureCollection features, FormOptions formOptions, ObjectPool<StringBuilder> builderPool)
+        {
+            Initialize(features);
+            _formOptions = formOptions;
+            _builderPool = builderPool;
+        }
+
         public virtual void Initialize(IFeatureCollection features)
         {
             _features = new FeatureReferences<FeatureInterfaces>(features);
             _request = InitializeHttpRequest();
             _response = InitializeHttpResponse();
+            features.TryAddLazy(CreateResponseCookiesFeatureDelagate, this);
+            features.TryAddLazy(CreateFormFeatureDelegate, this);
+        }
+
+        private static IResponseCookiesFeature CreateResponseCookiesFeature(object state)
+        {
+            var context = (DefaultHttpContext)state;
+            return new ResponseCookiesFeature(context._features.Collection, context._builderPool);
+        }
+
+        private static IFormFeature CreateFormFeature(object state)
+        {
+            var context = (DefaultHttpContext)state;
+            return new FormFeature(context.Request, context._formOptions);
         }
 
         public virtual void Uninitialize()
