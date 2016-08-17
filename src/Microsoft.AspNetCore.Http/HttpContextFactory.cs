@@ -43,17 +43,11 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(featureCollection));
             }
 
-            var responseCookiesFeature = new ResponseCookiesFeature(featureCollection, _builderPool);
-            featureCollection.Set<IResponseCookiesFeature>(responseCookiesFeature);
-
             var httpContext = new DefaultHttpContext(featureCollection);
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = httpContext;
             }
-
-            var formFeature = new FormFeature(httpContext.Request, _formOptions);
-            featureCollection.Set<IFormFeature>(formFeature);
 
             return httpContext;
         }
