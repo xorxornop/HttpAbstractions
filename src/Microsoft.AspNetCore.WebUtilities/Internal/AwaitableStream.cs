@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         private TaskCompletionSource<object> _initialRead = new TaskCompletionSource<object>();
         private TaskCompletionSource<object> _producing = new TaskCompletionSource<object>();
 
+        private bool _consumeCalled;
+
         internal bool HasData => _producing.Task.IsCompleted;
 
         public Task Completion => _producing.Task;
@@ -70,6 +72,15 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
             // Call the continuation
             Complete();
+
+            if (!_consumeCalled)
+            {
+                // Call it on the user's behalf
+                Consumed(count);
+            }
+
+            // Reset the state
+            _consumeCalled = false;
         }
 
         public StreamAwaitable ReadAsync() => new StreamAwaitable(this);
@@ -81,6 +92,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         /// <param name="count">Number of bytes consumed by the continuation</param>
         public void Consumed(int count)
         {
+            _consumeCalled = true;
+
             var segment = _head;
             var nodeIndex = segment.Start;
 

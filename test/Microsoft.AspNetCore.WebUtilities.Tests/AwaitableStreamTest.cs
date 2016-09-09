@@ -157,6 +157,54 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
             Assert.Equal(message.Length, index);
         }
 
+        [Fact]
+        public async Task NotCallingConsumeWillConsumeDataAutomatically()
+        {
+            var stream = new CallbackStream(async (s, token) =>
+            {
+                var sw = new StreamWriter(s);
+                await sw.WriteAsync("Hello");
+                await sw.FlushAsync();
+                await sw.WriteAsync("World");
+                await sw.FlushAsync();
+            });
+
+            var awaitableStream = new AwaitableStream();
+            var ignore = Task.Run(async () =>
+            {
+                using (awaitableStream)
+                {
+                    await stream.CopyToAsync(awaitableStream);
+                }
+            });
+
+            int calls = 0;
+
+            while (true)
+            {
+                var buffer = await awaitableStream.ReadAsync();
+                calls++;
+                if (buffer.IsEmpty && awaitableStream.Completion.IsCompleted)
+                {
+                    // Done
+                    break;
+                }
+
+                var segment = buffer.GetArraySegment();
+
+                var data = Encoding.UTF8.GetString(segment.Array, segment.Offset, segment.Count);
+                if (calls == 1)
+                {
+                    Assert.Equal("Hello", data);
+                }
+                else
+                {
+                    Assert.Equal("World", data);
+                }
+            }
+            Assert.Equal(3, calls);
+        }
+
         private class CallbackStream : Stream
         {
             private readonly Func<Stream, CancellationToken, Task> _callback;
