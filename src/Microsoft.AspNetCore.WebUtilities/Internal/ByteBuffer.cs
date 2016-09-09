@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities.Internal
 {
-    public struct ByteBuffer : IEnumerable<ArraySegment<byte>>
+    public struct ByteBuffer
     {
         private readonly BufferSegment _head;
         private readonly BufferSegment _tail;
@@ -106,14 +106,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             return new ArraySegment<byte>(data, 0, length);
         }
 
-        public IEnumerator<ArraySegment<byte>> GetEnumerator()
+        public Enumerator GetEnumerator()
         {
             return new Enumerator(_head, _tail);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
 
         public struct Enumerator : IEnumerator<ArraySegment<byte>>
