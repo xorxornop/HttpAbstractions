@@ -1,0 +1,193 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebUtilities.Internal;
+using Xunit;
+
+namespace Microsoft.AspNetCore.WebUtilities.Tests
+{
+    public class AwaitableStreamTest
+    {
+        [Fact]
+        public async Task CanConsumeData()
+        {
+            var stream = new CallbackStream(async s =>
+            {
+                var sw = new StreamWriter(s);
+                await sw.WriteAsync("Hello");
+                await sw.FlushAsync();
+                await sw.WriteAsync("World");
+                await sw.FlushAsync();
+            });
+
+            var awaitableStream = new AwaitableStream();
+            var ignore = Task.Run(async () =>
+            {
+                using (awaitableStream)
+                {
+                    await stream.CopyToAsync(awaitableStream);
+                }
+            });
+
+            int calls = 0;
+
+            while (true)
+            {
+                var buffer = await awaitableStream.ReadAsync();
+                calls++;
+                if (buffer.IsEmpty && awaitableStream.Completion.IsCompleted)
+                {
+                    // Done
+                    break;
+                }
+
+                var segment = buffer.GetArraySegment();
+
+                var data = Encoding.UTF8.GetString(segment.Array, segment.Offset, segment.Count);
+                if (calls == 1)
+                {
+                    Assert.Equal("Hello", data);
+                }
+                else
+                {
+                    Assert.Equal("World", data);
+                }
+
+                awaitableStream.Consumed(segment.Count);
+            }
+        }
+
+        [Fact]
+        public async Task CanConsumeLessDataThanProduced()
+        {
+            var stream = new CallbackStream(async s =>
+            {
+                var sw = new StreamWriter(s);
+                await sw.WriteAsync("Hello ");
+                await sw.FlushAsync();
+                await sw.WriteAsync("World");
+                await sw.FlushAsync();
+            });
+
+            var awaitableStream = new AwaitableStream();
+            var ignore = Task.Run(async () =>
+            {
+                using (awaitableStream)
+                {
+                    await stream.CopyToAsync(awaitableStream);
+                }
+            });
+
+            int index = 0;
+            var message = "Hello World";
+
+            while (true)
+            {
+                var buffer = await awaitableStream.ReadAsync();
+
+                if (buffer.IsEmpty && awaitableStream.Completion.IsCompleted)
+                {
+                    // Done
+                    break;
+                }
+
+                var segment = buffer.GetArraySegment();
+                var ch = (char)segment.Array[segment.Offset];
+
+                Assert.Equal(message[index++], ch);
+
+                awaitableStream.Consumed(1);
+            }
+
+            Assert.Equal(message.Length, index);
+        }
+
+        private class CallbackStream : Stream
+        {
+            private readonly Func<Stream, Task> _callback;
+            public CallbackStream(Func<Stream, Task> callback)
+            {
+                _callback = callback;
+            }
+
+            public override bool CanRead
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override bool CanSeek
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override bool CanWrite
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override long Length
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override long Position
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override void Flush()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+            {
+                return _callback(destination);
+            }
+        }
+    }
+}
