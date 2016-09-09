@@ -22,18 +22,32 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         private TaskCompletionSource<object> _initialRead = new TaskCompletionSource<object>();
         private TaskCompletionSource<object> _producing = new TaskCompletionSource<object>();
 
-        internal bool HasData => _producing.Task.IsCompleted || _continuation == _completed;
+        internal bool HasData => _producing.Task.IsCompleted;
 
         public Task Completion => _producing.Task;
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            // Already cancelled to just throw
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (!_initialRead.Task.IsCompleted)
+            {
+                // We can register the very first time write is called since the same token is passed into
+                // CopyToAsync
+                cancellationToken.Register(state => ((AwaitableStream)state).Cancel(), this);
+            }
+
             // Wait for the first read operation.
             // This is important because the call to write async wants to call the continuation directly
             // so that the continuation can consume the buffers directly without worrying about where 
             // ownership lies. Once the call to WriteAsync returns, the caller owns the buffer so it can't
             // be stashed away without copying
             await _initialRead.Task;
+
+            // TODO: If node we're appending to is owned consider copying into that node.
+            // We need to measure the difference in copying versus using the exising buffer for that
+            // scenario.
 
             // Make a new segment capturing the buffer passed in
             var node = new BufferSegment();
@@ -181,10 +195,21 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         protected override void Dispose(bool disposing)
         {
             // Mark the stream as "done" when it's disposed
-            _producing.TrySetResult(null);
+            if (_producing.TrySetResult(null))
+            {
+                // Trigger the callback so user code can react to this state change
+                Complete();
+            }
+        }
 
-            // Trigger the callback so user code can react to this state change
-            Complete();
+        public void Cancel()
+        {
+            // Tell the consumer we're done
+            if (_producing.TrySetCanceled())
+            {
+                // Trigger the callback so user code can react to this state change
+                Complete();
+            }
         }
 
         internal void OnCompleted(Action continuation)

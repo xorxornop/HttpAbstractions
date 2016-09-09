@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
         [Fact]
         public async Task CanConsumeData()
         {
-            var stream = new CallbackStream(async s =>
+            var stream = new CallbackStream(async (s, token) =>
             {
                 var sw = new StreamWriter(s);
                 await sw.WriteAsync("Hello");
@@ -62,9 +62,60 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
         }
 
         [Fact]
+        public async Task CanCancelConsumingData()
+        {
+            var cts = new CancellationTokenSource();
+            var stream = new CallbackStream(async (s, token) =>
+            {
+                var hello = Encoding.UTF8.GetBytes("Hello");
+                var world = Encoding.UTF8.GetBytes("Hello");
+                await s.WriteAsync(hello, 0, hello.Length, token);
+                cts.Cancel();
+                await s.WriteAsync(world, 0, world.Length, token);
+            });
+
+            var awaitableStream = new AwaitableStream();
+            var ignore = Task.Run(async () =>
+            {
+                using (awaitableStream)
+                {
+                    await stream.CopyToAsync(awaitableStream, 100, cts.Token);
+                }
+            });
+
+            int calls = 0;
+
+            while (true)
+            {
+                var buffer = await awaitableStream.ReadAsync();
+                calls++;
+                if (buffer.IsEmpty && awaitableStream.Completion.IsCompleted)
+                {
+                    // Done
+                    break;
+                }
+
+                if (awaitableStream.Completion.IsCanceled)
+                {
+                    break;
+                }
+
+                var segment = buffer.GetArraySegment();
+
+                var data = Encoding.UTF8.GetString(segment.Array, segment.Offset, segment.Count);
+                Assert.Equal("Hello", data);
+
+                awaitableStream.Consumed(segment.Count);
+            }
+
+            Assert.Equal(2, calls);
+            Assert.True(awaitableStream.Completion.IsCanceled);
+        }
+
+        [Fact]
         public async Task CanConsumeLessDataThanProduced()
         {
-            var stream = new CallbackStream(async s =>
+            var stream = new CallbackStream(async (s, token) =>
             {
                 var sw = new StreamWriter(s);
                 await sw.WriteAsync("Hello ");
@@ -108,8 +159,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
 
         private class CallbackStream : Stream
         {
-            private readonly Func<Stream, Task> _callback;
-            public CallbackStream(Func<Stream, Task> callback)
+            private readonly Func<Stream, CancellationToken, Task> _callback;
+            public CallbackStream(Func<Stream, CancellationToken, Task> callback)
             {
                 _callback = callback;
             }
@@ -186,7 +237,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
 
             public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
             {
-                return _callback(destination);
+                return _callback(destination, cancellationToken);
             }
         }
     }
