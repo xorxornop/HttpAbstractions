@@ -42,7 +42,18 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
         public int IndexOf(byte data)
         {
-            var segment = _head;
+            return IndexOf(data, 0);
+        }
+
+        public int IndexOf(byte data, int start)
+        {
+            BufferSegment segment;
+            int offset;
+            if (!TrySeek(start, out segment, out offset))
+            {
+                return -1;
+            }
+
             int index = 0;
 
             while (true)
@@ -71,6 +82,36 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         public ByteBuffer Slice(int offset, int length)
         {
             return default(ByteBuffer);
+        }
+
+        private bool TrySeek(int length, out BufferSegment segment, out int index)
+        {
+            var count = 0;
+            segment = _head;
+            index = -1;
+
+            while (true)
+            {
+                for (int i = 0; i < segment.Length; i++)
+                {
+                    if (count == length)
+                    {
+                        index = segment.Start + i;
+                        return true;
+                    }
+
+                    count++;
+                }
+
+                if (segment == _tail)
+                {
+                    break;
+                }
+
+                segment = segment.Next;
+            }
+
+            return false;
         }
 
         public ArraySegment<byte> GetArraySegment()
