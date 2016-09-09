@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
         public int IndexOf(byte data)
         {
-            var node = _head;
+            var segment = _head;
             int index = 0;
 
             while (true)
             {
-                for (int i = 0; i < node.Length; i++)
+                for (int i = 0; i < segment.Length; i++)
                 {
-                    if (node.Buffer.Array[i + node.Start] == data)
+                    if (segment.Buffer.Array[i + segment.Start] == data)
                     {
                         return index;
                     }
@@ -57,12 +57,12 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
                     index++;
                 }
 
-                if (node == _tail)
+                if (segment == _tail)
                 {
                     break;
                 }
 
-                node = node.Next;
+                segment = segment.Next;
             }
 
             return -1;

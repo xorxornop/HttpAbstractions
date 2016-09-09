@@ -51,22 +51,22 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             // scenario.
 
             // Make a new segment capturing the buffer passed in
-            var node = new BufferSegment();
-            node.Buffer = new ArraySegment<byte>(buffer, offset, count);
-            node.Start = offset;
-            node.End = offset + count;
+            var segment = new BufferSegment();
+            segment.Buffer = new ArraySegment<byte>(buffer, offset, count);
+            segment.Start = offset;
+            segment.End = offset + count;
 
             // Append it to the linked list
             if (_head == null || _head.Length == 0)
             {
-                _head = node;
+                _head = segment;
             }
             else
             {
-                _tail.Next = node;
+                _tail.Next = segment;
             }
 
-            _tail = node;
+            _tail = segment;
 
             // Call the continuation
             Complete();
@@ -81,21 +81,21 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         /// <param name="count">Number of bytes consumed by the continuation</param>
         public void Consumed(int count)
         {
-            var node = _head;
-            var nodeIndex = node.Start;
+            var segment = _head;
+            var nodeIndex = segment.Start;
 
             while (count > 0)
             {
-                var consumed = Math.Min(node.Length, count);
+                var consumed = Math.Min(segment.Length, count);
 
                 count -= consumed;
                 nodeIndex += consumed;
 
-                if (nodeIndex == node.End && _head != _tail)
+                if (nodeIndex == segment.End && _head != _tail)
                 {
                     // Move to the next node
-                    node = node.Next;
-                    nodeIndex = node.Start;
+                    segment = segment.Next;
+                    nodeIndex = segment.Start;
                 }
 
                 // End of the list stop
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             }
 
             // Reset the head to the unconsumed buffer
-            _head = node;
+            _head = segment;
             _head.Start = nodeIndex;
 
             // Loop from head to tail and copy unconsumed data into buffers we own, this
@@ -114,20 +114,20 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             // buffers for anything else
             int length = 0;
 
-            node = _head;
+            segment = _head;
             while (true)
             {
-                if (!node.Owned)
+                if (!segment.Owned)
                 {
-                    length += node.Length;
+                    length += segment.Length;
                 }
 
-                if (node == _tail)
+                if (segment == _tail)
                 {
                     break;
                 }
 
-                node = node.Next;
+                segment = segment.Next;
             }
 
             // This can happen for 2 reasons:
@@ -146,27 +146,27 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             // 1. Finds the first owned buffer in the list
             // 2. Copies data into the buffer we just allocated
             BufferSegment owned = null;
-            node = _head;
+            segment = _head;
             var offset = 0;
 
             while (true)
             {
-                if (!node.Owned)
+                if (!segment.Owned)
                 {
-                    Buffer.BlockCopy(node.Buffer.Array, node.Start, buffer, offset, node.Length);
-                    offset += node.Length;
+                    Buffer.BlockCopy(segment.Buffer.Array, segment.Start, buffer, offset, segment.Length);
+                    offset += segment.Length;
                 }
                 else if (owned == null)
                 {
-                    owned = node;
+                    owned = segment;
                 }
 
-                if (node == _tail)
+                if (segment == _tail)
                 {
                     break;
                 }
 
-                node = node.Next;
+                segment = segment.Next;
             }
 
             var data = new BufferSegment
