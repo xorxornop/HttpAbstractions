@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         private BufferSegment _tail;
 
         private Action _continuation;
+        private CancellationTokenRegistration _registration;
 
         private TaskCompletionSource<object> _initialRead = new TaskCompletionSource<object>();
         private TaskCompletionSource<object> _producing = new TaskCompletionSource<object>();
@@ -31,11 +32,11 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             // Already cancelled to just throw
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (!_initialRead.Task.IsCompleted)
+            if (_registration == default(CancellationTokenRegistration))
             {
                 // We can register the very first time write is called since the same token is passed into
                 // CopyToAsync
-                cancellationToken.Register(state => ((AwaitableStream)state).Cancel(), this);
+                _registration = cancellationToken.Register(state => ((AwaitableStream)state).Cancel(), this);
             }
 
             // Wait for the first read operation.
@@ -200,6 +201,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
                 // Trigger the callback so user code can react to this state change
                 Complete();
             }
+
+            _registration.Dispose();
         }
 
         public void Cancel()
