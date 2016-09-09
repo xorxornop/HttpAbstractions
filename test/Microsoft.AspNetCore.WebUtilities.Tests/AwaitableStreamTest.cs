@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
             var stream = new CallbackStream(async (s, token) =>
             {
                 var hello = Encoding.UTF8.GetBytes("Hello");
-                var world = Encoding.UTF8.GetBytes("Hello");
+                var world = Encoding.UTF8.GetBytes("World");
                 await s.WriteAsync(hello, 0, hello.Length, token);
                 cts.Cancel();
                 await s.WriteAsync(world, 0, world.Length, token);
