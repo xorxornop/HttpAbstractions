@@ -9,11 +9,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
     {
         public ArraySegment<byte> Buffer;
         public bool Owned;
-        public int Start;
-        public int End;
 
         public BufferSegment Next;
-
-        public int Length => End - Start;
     }
 }

@@ -55,11 +55,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             // Make a new segment capturing the buffer passed in
             var segment = new BufferSegment();
             segment.Buffer = new ArraySegment<byte>(buffer, offset, count);
-            segment.Start = offset;
-            segment.End = offset + count;
 
             // Append it to the linked list
-            if (_head == null || _head.Length == 0)
+            if (_head == null || _head.Buffer.Count == 0)
             {
                 _head = segment;
             }
@@ -95,20 +93,20 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             _consumeCalled = true;
 
             var segment = _head;
-            var nodeIndex = segment.Start;
+            var nodeIndex = segment.Buffer.Offset;
 
             while (count > 0)
             {
-                var consumed = Math.Min(segment.Length, count);
+                var consumed = Math.Min(segment.Buffer.Count, count);
 
                 count -= consumed;
                 nodeIndex += consumed;
 
-                if (nodeIndex == segment.End && _head != _tail)
+                if (nodeIndex == (segment.Buffer.Offset + segment.Buffer.Count) && _head != _tail)
                 {
                     // Move to the next node
                     segment = segment.Next;
-                    nodeIndex = segment.Start;
+                    nodeIndex = segment.Buffer.Offset;
                 }
 
                 // End of the list stop
@@ -120,7 +118,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
             // Reset the head to the unconsumed buffer
             _head = segment;
-            _head.Start = nodeIndex;
+            _head.Buffer = new ArraySegment<byte>(segment.Buffer.Array, nodeIndex, (segment.Buffer.Offset + segment.Buffer.Count) - nodeIndex);
 
             // Loop from head to tail and copy unconsumed data into buffers we own, this
             // is important because after the call the WriteAsync returns, the stream can reuse these
@@ -132,7 +130,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             {
                 if (!segment.Owned)
                 {
-                    length += segment.Length;
+                    length += segment.Buffer.Count;
                 }
 
                 if (segment == _tail)
@@ -166,8 +164,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             {
                 if (!segment.Owned)
                 {
-                    Buffer.BlockCopy(segment.Buffer.Array, segment.Start, buffer, offset, segment.Length);
-                    offset += segment.Length;
+                    Buffer.BlockCopy(segment.Buffer.Array, segment.Buffer.Offset, buffer, offset, segment.Buffer.Count);
+                    offset += segment.Buffer.Count;
                 }
                 else if (owned == null)
                 {
@@ -185,8 +183,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             var data = new BufferSegment
             {
                 Buffer = new ArraySegment<byte>(buffer),
-                Start = 0,
-                End = buffer.Length,
                 Owned = true
             };
 

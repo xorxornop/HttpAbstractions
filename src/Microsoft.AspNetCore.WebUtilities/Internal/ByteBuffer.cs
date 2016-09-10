@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         private readonly BufferSegment _head;
         private readonly BufferSegment _tail;
 
-        public bool IsEmpty => _head == _tail && (_head?.Start == _tail?.End);
+        public bool IsEmpty => _head == _tail && (_head?.Buffer.Offset == (_head?.Buffer.Offset + _tail?.Buffer.Count));
 
         private bool IsSingleBuffer => _head == _tail;
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
                 var node = _head;
                 while (true)
                 {
-                    length += node.Length;
+                    length += node.Buffer.Count;
                     if (node == _tail)
                     {
                         break;
@@ -47,20 +47,15 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
         public int IndexOf(byte data, int start)
         {
-            BufferSegment segment;
-            int offset;
-            if (!TrySeek(start, out segment, out offset))
-            {
-                return -1;
-            }
+            BufferSegment segment = _head;
 
             int index = 0;
 
             while (true)
             {
-                for (int i = 0; i < segment.Length; i++)
+                for (int i = 0; i < segment.Buffer.Count; i++)
                 {
-                    if (segment.Buffer.Array[i + segment.Start] == data)
+                    if (segment.Buffer.Array[i + segment.Buffer.Offset] == data)
                     {
                         return index;
                     }
@@ -82,36 +77,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         public ByteBuffer Slice(int offset, int length)
         {
             return default(ByteBuffer);
-        }
-
-        private bool TrySeek(int length, out BufferSegment segment, out int index)
-        {
-            var count = 0;
-            segment = _head;
-            index = -1;
-
-            while (true)
-            {
-                for (int i = 0; i < segment.Length; i++)
-                {
-                    if (count == length)
-                    {
-                        index = segment.Start + i;
-                        return true;
-                    }
-
-                    count++;
-                }
-
-                if (segment == _tail)
-                {
-                    break;
-                }
-
-                segment = segment.Next;
-            }
-
-            return false;
         }
 
         public ArraySegment<byte> GetArraySegment()
@@ -164,7 +129,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
                 _head = head;
                 _tail = tail;
                 _current = default(ArraySegment<byte>);
-                _offset = head.Start;
+                _offset = head.Buffer.Offset;
             }
 
             public ArraySegment<byte> Current => _current;
@@ -177,12 +142,12 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
             public bool MoveNext()
             {
-                if (_head == _tail && _offset == _tail.End)
+                if (_head == _tail && _offset == (_tail.Buffer.Offset + _tail.Buffer.Count))
                 {
                     return false;
                 }
 
-                _current = new ArraySegment<byte>(_head.Buffer.Array, _head.Start, _head.Length);
+                _current = _head.Buffer;
 
                 if (_head != _tail)
                 {
@@ -190,7 +155,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
                 }
                 else
                 {
-                    _offset = _tail.End;
+                    _offset = _tail.Buffer.Offset + _tail.Buffer.Count;
                 }
 
                 return true;
