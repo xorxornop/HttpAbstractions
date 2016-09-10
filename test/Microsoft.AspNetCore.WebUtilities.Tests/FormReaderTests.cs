@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             var body = MakeStream(bufferRequest, "foo=1&bar=1234567890&baz=3&baz=4");
 
-            var formCollection = await ReadFormAsync(new Utf8FormReader(body) { ValueLengthLimit = 10 });
+            var formCollection = await ReadFormAsync(new FormReader(body) { ValueLengthLimit = 10 });
 
             Assert.Equal("1", formCollection["foo"].ToString());
             Assert.Equal("1234567890", formCollection["bar"].ToString());
