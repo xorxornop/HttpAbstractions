@@ -10,8 +10,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
     {
         private readonly BufferSegment _head;
         private readonly BufferSegment _tail;
+        private readonly ArraySegment<byte> _data;
 
-        public bool IsEmpty => _head == _tail && (_head?.Buffer.Offset == (_head?.Buffer.Offset + _tail?.Buffer.Count));
+        public bool IsEmpty => _head == _tail && (_head?.Buffer.Offset == _head?.End);
 
         private bool IsSingleBuffer => _head == _tail;
 
@@ -21,11 +22,17 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             {
                 // TODO: Cache
                 int length = 0;
-                var node = _head;
+                var segment = _head;
+
+                if (segment == null)
+                {
+                    return _data.Count;
+                }
+
                 while (true)
                 {
-                    length += node.Buffer.Count;
-                    if (node == _tail)
+                    length += segment.Buffer.Count;
+                    if (segment == _tail)
                     {
                         break;
                     }
@@ -34,8 +41,16 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             }
         }
 
+        public ByteBuffer(ArraySegment<byte> data)
+        {
+            _data = data;
+            _head = null;
+            _tail = null;
+        }
+
         public ByteBuffer(BufferSegment head, BufferSegment tail)
         {
+            _data = default(ArraySegment<byte>);
             _head = head;
             _tail = tail;
         }
@@ -45,22 +60,31 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             return IndexOf(data, 0);
         }
 
-        public int IndexOf(byte data, int start)
+        // TODO: Support start
+        public int IndexOf(byte value, int start)
         {
-            BufferSegment segment = _head;
+            var segment = _head;
 
-            int index = 0;
+            if (segment == null)
+            {
+                // Just return the data directly
+                return Array.IndexOf(_data.Array, value, _data.Offset, _data.Count);
+            }
+
+            int count = 0;
 
             while (true)
             {
-                for (int i = 0; i < segment.Buffer.Count; i++)
-                {
-                    if (segment.Buffer.Array[i + segment.Buffer.Offset] == data)
-                    {
-                        return index;
-                    }
+                int index = Array.IndexOf(segment.Buffer.Array, value, segment.Buffer.Offset, segment.Buffer.Count);
 
-                    index++;
+                if (index == -1)
+                {
+                    count += segment.Buffer.Count;
+                }
+                else
+                {
+                    count += index;
+                    return count;
                 }
 
                 if (segment == _tail)
@@ -81,6 +105,11 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
         public ArraySegment<byte> GetArraySegment()
         {
+            if (_head == null)
+            {
+                return _data;
+            }
+
             List<ArraySegment<byte>> buffers = null;
             var length = 0;
 
@@ -114,7 +143,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
         public Enumerator GetEnumerator()
         {
-            return new Enumerator(_head, _tail);
+            return new Enumerator(_head, _tail, _data);
         }
 
         public struct Enumerator : IEnumerator<ArraySegment<byte>>
@@ -122,13 +151,15 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             private BufferSegment _head;
             private readonly BufferSegment _tail;
             private ArraySegment<byte> _current;
+            private ArraySegment<byte> _data;
             private int _offset;
 
-            public Enumerator(BufferSegment head, BufferSegment tail)
+            public Enumerator(BufferSegment head, BufferSegment tail, ArraySegment<byte> data)
             {
                 _head = head;
                 _tail = tail;
                 _current = default(ArraySegment<byte>);
+                _data = data;
                 _offset = head.Buffer.Offset;
             }
 
@@ -142,6 +173,18 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
             public bool MoveNext()
             {
+                if (_head == null)
+                {
+                    if (_data.Array != null)
+                    {
+                        _current = _data;
+                        _data = default(ArraySegment<byte>);
+                        return true;
+                    }
+
+                    return false;
+                }
+
                 if (_head == _tail && _offset == (_tail.Buffer.Offset + _tail.Buffer.Count))
                 {
                     return false;

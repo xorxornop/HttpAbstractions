@@ -11,5 +11,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         public bool Owned;
 
         public BufferSegment Next;
+
+        public int End => Buffer.Offset + Buffer.Count;
     }
 }

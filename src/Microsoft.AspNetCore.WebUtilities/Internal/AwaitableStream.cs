@@ -14,15 +14,23 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
     {
         private static readonly Action _completed = () => { };
 
+        // The list of unconsumed buffers
         private BufferSegment _head;
         private BufferSegment _tail;
+
+        // The buffer that represents the current write operation
+        private ArraySegment<byte> _currentWrite;
 
         private Action _continuation;
         private CancellationTokenRegistration _registration;
 
+        // Set when the first read happens
         private TaskCompletionSource<object> _initialRead = new TaskCompletionSource<object>();
+
+        // Set when this stream is disposed
         private TaskCompletionSource<object> _producing = new TaskCompletionSource<object>();
 
+        // Set when consumed is called during the continuation
         private bool _consumeCalled;
 
         internal bool HasData => _producing.Task.IsCompleted;
@@ -34,7 +42,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             // Already cancelled to just throw
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_registration == default(CancellationTokenRegistration))
+            if (_registration == default(CancellationTokenRegistration) && cancellationToken != CancellationToken.None)
             {
                 // We can register the very first time write is called since the same token is passed into
                 // CopyToAsync
@@ -45,28 +53,29 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             // This is important because the call to write async wants to call the continuation directly
             // so that the continuation can consume the buffers directly without worrying about where 
             // ownership lies. Once the call to WriteAsync returns, the caller owns the buffer so it can't
-            // be stashed away without copying
+            // be stashed away without copying.
             await _initialRead.Task;
 
-            // TODO: If node we're appending to is owned consider copying into that node.
+            // TODO: If segment we're appending to is owned consider appending data into that segment rather
+            // than adding a new node.
             // We need to measure the difference in copying versus using the exising buffer for that
             // scenario.
 
-            // Make a new segment capturing the buffer passed in
-            var segment = new BufferSegment();
-            segment.Buffer = new ArraySegment<byte>(buffer, offset, count);
+            var data = new ArraySegment<byte>(buffer, offset, count);
 
-            // Append it to the linked list
-            if (_head == null || _head.Buffer.Count == 0)
+            if (_head == null)
             {
-                _head = segment;
+                // The list is empty, we just store the current write
+                _currentWrite = data;
             }
             else
             {
+                // Otherwise add this segment to the end of the list
+                var segment = new BufferSegment();
+                segment.Buffer = data;
                 _tail.Next = segment;
+                _tail = segment;
             }
-
-            _tail = segment;
 
             // Call the continuation
             Complete();
@@ -92,21 +101,39 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         {
             _consumeCalled = true;
 
+            // We didn't consume everything
+            if (count < _currentWrite.Count)
+            {
+                // Make a list with the buffer in it and mark the right bytes as consumed
+                if (_head == null)
+                {
+                    _head = new BufferSegment();
+                    _head.Buffer = _currentWrite;
+                    _tail = _head;
+                }
+            }
+            else if (_head == null)
+            {
+                // We consumed everything and there was no list
+                _currentWrite = default(ArraySegment<byte>);
+                return;
+            }
+
             var segment = _head;
-            var nodeIndex = segment.Buffer.Offset;
+            var segmentOffset = segment.Buffer.Offset;
 
             while (count > 0)
             {
                 var consumed = Math.Min(segment.Buffer.Count, count);
 
                 count -= consumed;
-                nodeIndex += consumed;
+                segmentOffset += consumed;
 
-                if (nodeIndex == (segment.Buffer.Offset + segment.Buffer.Count) && _head != _tail)
+                if (segmentOffset == segment.End && _head != _tail)
                 {
                     // Move to the next node
                     segment = segment.Next;
-                    nodeIndex = segment.Buffer.Offset;
+                    segmentOffset = segment.Buffer.Offset;
                 }
 
                 // End of the list stop
@@ -118,7 +145,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
             // Reset the head to the unconsumed buffer
             _head = segment;
-            _head.Buffer = new ArraySegment<byte>(segment.Buffer.Array, nodeIndex, (segment.Buffer.Offset + segment.Buffer.Count) - nodeIndex);
+            _head.Buffer = new ArraySegment<byte>(segment.Buffer.Array, segmentOffset, segment.End - segmentOffset);
 
             // Loop from head to tail and copy unconsumed data into buffers we own, this
             // is important because after the call the WriteAsync returns, the stream can reuse these
@@ -244,6 +271,12 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
         internal ByteBuffer GetBuffer()
         {
             _continuation = null;
+
+            if (_head == null)
+            {
+                return new ByteBuffer(_currentWrite);
+            }
+
             return new ByteBuffer(_head, _tail);
         }
 
