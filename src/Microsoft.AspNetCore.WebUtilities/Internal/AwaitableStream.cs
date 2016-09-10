@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
             // Already cancelled to just throw
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (_registration == default(CancellationTokenRegistration) && cancellationToken != CancellationToken.None)
+            if (cancellationToken.CanBeCanceled && _registration == default(CancellationTokenRegistration))
             {
                 // We can register the very first time write is called since the same token is passed into
                 // CopyToAsync
