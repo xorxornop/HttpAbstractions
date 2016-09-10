@@ -158,6 +158,51 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
         }
 
         [Fact]
+        public async Task CanConsumeLessDataThanProducedWithBufferReuse()
+        {
+            var stream = new CallbackStream(async (s, token) =>
+            {
+                var data = new byte[4096];
+                Encoding.UTF8.GetBytes("Hello ", 0, 6, data, 0);
+                await s.WriteAsync(data, 0, 6);
+                Encoding.UTF8.GetBytes("World", 0, 5, data, 0);
+                await s.WriteAsync(data, 0, 5);
+            });
+
+            var awaitableStream = new AwaitableStream();
+            var ignore = Task.Run(async () =>
+            {
+                using (awaitableStream)
+                {
+                    await stream.CopyToAsync(awaitableStream);
+                }
+            });
+
+            int index = 0;
+            var message = "Hello World";
+
+            while (true)
+            {
+                var buffer = await awaitableStream.ReadAsync();
+
+                if (buffer.IsEmpty && awaitableStream.Completion.IsCompleted)
+                {
+                    // Done
+                    break;
+                }
+
+                var segment = buffer.GetArraySegment();
+                var ch = (char)segment.Array[segment.Offset];
+
+                Assert.Equal(message[index++], ch);
+
+                awaitableStream.Consumed(1);
+            }
+
+            Assert.Equal(message.Length, index);
+        }
+
+        [Fact]
         public async Task NotCallingConsumeWillConsumeDataAutomatically()
         {
             var stream = new CallbackStream(async (s, token) =>
