@@ -113,6 +113,46 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
         }
 
         [Fact]
+        public async Task SameBuffersReceivedIfConsumed()
+        {
+            var hello = Encoding.UTF8.GetBytes("Hello");
+            var world = Encoding.UTF8.GetBytes("World");
+            byte[][] buffers = new byte[2][] { hello, world };
+
+            var stream = new CallbackStream(async (s, token) =>
+            {
+                await s.WriteAsync(hello, 0, hello.Length, token);
+                await s.WriteAsync(world, 0, world.Length, token);
+            });
+
+            var awaitableStream = new AwaitableStream();
+            var ignore = Task.Run(async () =>
+            {
+                using (awaitableStream)
+                {
+                    await stream.CopyToAsync(awaitableStream);
+                }
+            });
+
+            int calls = 0;
+
+            while (true)
+            {
+                var buffer = await awaitableStream.ReadAsync();
+                if (buffer.IsEmpty && awaitableStream.Completion.IsCompleted)
+                {
+                    // Done
+                    break;
+                }
+
+                var segment = buffer.GetArraySegment();
+                Assert.Same(segment.Array, buffers[calls++]);
+            }
+
+            Assert.Equal(2, calls);
+        }
+
+        [Fact]
         public async Task CanConsumeLessDataThanProduced()
         {
             var stream = new CallbackStream(async (s, token) =>
