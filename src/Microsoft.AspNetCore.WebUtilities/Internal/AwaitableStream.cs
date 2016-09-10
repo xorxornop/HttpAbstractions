@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
 
         private void Complete()
         {
-            Interlocked.CompareExchange(ref _continuation, _completed, null)?.Invoke();
+            (_continuation ?? Interlocked.CompareExchange(ref _continuation, _completed, null))?.Invoke();
         }
 
         internal ByteBuffer GetBuffer()
