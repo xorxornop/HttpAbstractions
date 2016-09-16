@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Internal
                 _tail = tail;
                 _current = default(ArraySegment<byte>);
                 _data = data;
-                _offset = head.Buffer.Offset;
+                _offset = head?.Buffer.Offset ?? data.Offset;
             }
 
             public ArraySegment<byte> Current => _current;
