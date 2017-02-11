@@ -112,7 +112,6 @@ namespace Microsoft.AspNetCore.Builder
                 return async context =>
                 {
                     var middlewareFactory = (IMiddlewareFactory)context.RequestServices.GetService(typeof(IMiddlewareFactory));
-
                     if (middlewareFactory == null)
                     {
                         // No middleware factory
@@ -120,12 +119,10 @@ namespace Microsoft.AspNetCore.Builder
                     }
 
                     var middleware = middlewareFactory.Create(middlewareType);
-
                     if (middleware == null)
                     {
                         // The factory returned null, it's a broken implementation
                         throw new InvalidOperationException(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(middlewareType));
-
                     }
 
                     try
