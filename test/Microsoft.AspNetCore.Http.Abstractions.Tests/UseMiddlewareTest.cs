@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Http
                 await app(context);
             });
 
-            Assert.Equal(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(typeof(Middleware)), exception.Message);
+            Assert.Equal(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(typeof(BadMiddlewareFactory), typeof(Middleware)), exception.Message);
         }
 
         [Fact]

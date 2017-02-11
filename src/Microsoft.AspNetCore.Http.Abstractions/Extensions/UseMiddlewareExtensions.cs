@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Builder
                     if (middleware == null)
                     {
                         // The factory returned null, it's a broken implementation
-                        throw new InvalidOperationException(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(middlewareType));
+                        throw new InvalidOperationException(Resources.FormatException_UseMiddlewareUnableToCreateMiddleware(middlewareFactory.GetType(), middlewareType));
                     }
 
                     try
