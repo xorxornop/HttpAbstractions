@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -18,7 +17,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         public static string Encode(byte[] data)
         {
             var encodedValue = Convert.ToBase64String(data);
-            return EncodeInternal(encodedValue);
+            EncodeInternal(encodedValue);
+            return encodedValue;
         }
 
         /// <summary>
@@ -32,38 +32,30 @@ namespace Microsoft.AspNetCore.WebUtilities
             return Convert.FromBase64String(DecodeToBase64String(text));
         }
 
+        // Since the string instnace passed here is owned by the Encode method, its safe to modify
+        // that instance's state, whereas in case of Decode method the passed in string instance is not owned
+        // by the Decode method, so we shouldn't be modifying it.
         // To enable unit testing
-        internal static string EncodeInternal(string base64EncodedString)
+        internal static unsafe void EncodeInternal(string base64String)
         {
-            var length = base64EncodedString.Length;
-            while (length > 0 && base64EncodedString[length - 1] == '=')
+            fixed (char* destination = base64String)
             {
-                length--;
-            }
-
-            if (length == 0)
-            {
-                return string.Empty;
-            }
-
-            var inplaceStringBuilder = new InplaceStringBuilder(length);
-            for (var i = 0; i < length; i++)
-            {
-                if (base64EncodedString[i] == '+')
+                for (var i = 0; i < base64String.Length; i++)
                 {
-                    inplaceStringBuilder.Append('-');
-                }
-                else if (base64EncodedString[i] == '/')
-                {
-                    inplaceStringBuilder.Append('_');
-                }
-                else
-                {
-                    inplaceStringBuilder.Append(base64EncodedString[i]);
+                    if (destination[i] == '+')
+                    {
+                        destination[i] = '-';
+                    }
+                    else if (destination[i] == '/')
+                    {
+                        destination[i] = '_';
+                    }
+                    else if (destination[i] == '=')
+                    {
+                        destination[i] = '.';
+                    }
                 }
             }
-
-            return inplaceStringBuilder.ToString();
         }
 
         // To enable unit testing
@@ -74,8 +66,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return text;
             }
 
-            var padLength = 3 - ((text.Length + 3) % 4);
-            var inplaceStringBuilder = new InplaceStringBuilder(capacity: text.Length + padLength);
+            var inplaceStringBuilder = new InplaceStringBuilder(capacity: text.Length);
 
             for (var i = 0; i < text.Length; i++)
             {
@@ -87,15 +78,14 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     inplaceStringBuilder.Append('/');
                 }
+                else if (text[i] == '.')
+                {
+                    inplaceStringBuilder.Append('=');
+                }
                 else
                 {
                     inplaceStringBuilder.Append(text[i]);
                 }
-            }
-
-            for (var i = 0; i < padLength; i++)
-            {
-                inplaceStringBuilder.Append('=');
             }
 
             return inplaceStringBuilder.ToString();
