@@ -12,7 +12,11 @@ namespace Microsoft.AspNetCore.Authentication
         public SignInContext(HttpContext context, string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
             : base(context, authenticationScheme, properties)
         {
-            Principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+            Principal = principal;
         }
 
         public ClaimsPrincipal Principal { get; }

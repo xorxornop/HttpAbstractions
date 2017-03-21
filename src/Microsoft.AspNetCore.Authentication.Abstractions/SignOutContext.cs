@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.Authentication
     {
         public SignOutContext(HttpContext context, string authenticationScheme, AuthenticationProperties properties)
             : base(context, authenticationScheme, properties)
-        {
-        }
+        { }
     }
 }

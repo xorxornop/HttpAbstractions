@@ -10,8 +10,7 @@ namespace Microsoft.AspNetCore.Authentication
     {
         public ChallengeContext(HttpContext httpContext, string authenticationScheme)
             : this(httpContext, authenticationScheme, properties: null, behavior: ChallengeBehavior.Automatic)
-        {
-        }
+        { }
 
         public ChallengeContext(HttpContext httpContext, string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
             : base(httpContext, authenticationScheme, properties)
@@ -20,7 +19,6 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 throw new ArgumentException(nameof(authenticationScheme));
             }
-
             Behavior = behavior;
         }
 
