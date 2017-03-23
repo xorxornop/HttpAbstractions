@@ -16,7 +16,6 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Http\Microsoft.AspNetCore.Http.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Http.Extensions\Microsoft.AspNetCore.Http.Extensions.csproj" />
     <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.WebEncoders" Version="1.2.0-*" />
   </ItemGroup>
 
 </Project>
