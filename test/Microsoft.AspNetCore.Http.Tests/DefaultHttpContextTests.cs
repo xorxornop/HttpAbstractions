@@ -191,7 +191,9 @@ namespace Microsoft.AspNetCore.Http
             TestCachedFeaturesAreNull(context, features);
             TestCachedFeaturesAreNull(context.Request, features);
             TestCachedFeaturesAreNull(context.Response, features);
+#pragma warning disable 618
             TestCachedFeaturesAreNull(context.Authentication, features);
+#pragma warning restore 618
             TestCachedFeaturesAreNull(context.Connection, features);
             TestCachedFeaturesAreNull(context.WebSockets, features);
         }
@@ -220,7 +222,9 @@ namespace Microsoft.AspNetCore.Http
             TestCachedFeaturesAreSet(context, features);
             TestCachedFeaturesAreSet(context.Request, features);
             TestCachedFeaturesAreSet(context.Response, features);
+#pragma warning disable 618
             TestCachedFeaturesAreSet(context.Authentication, features);
+#pragma warning restore 618
             TestCachedFeaturesAreSet(context.Connection, features);
             TestCachedFeaturesAreSet(context.WebSockets, features);
         }

@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Authentication
         {
             if (_map.ContainsKey(name))
             {
-                return Task.FromResult(_map[name[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]);
+                return Task.FromResult(_map[name]);
             }
             return Task.FromResult<AuthenticationScheme>(null);
         }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     _requestHandlers.Add(scheme);
                 }
-                _map[scheme.Name[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = scheme;
+                _map[scheme.Name] = scheme;
             }
         }
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (_map.ContainsKey(name))
                 {
-                    var scheme = _map[name[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)];
+                    var scheme = _map[name];
                     _requestHandlers.Remove(_requestHandlers.Where(s => s.Name == name).FirstOrDefault());
                     _map.Remove(name);
                 }

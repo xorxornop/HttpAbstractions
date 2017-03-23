@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Authentication
         {
             if (_handlerMap.ContainsKey(authenticationScheme))
             {
-                return _handlerMap[authenticationScheme[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)];
+                return _handlerMap[authenticationScheme];
             }
 
             var scheme = await Schemes.GetSchemeAsync(authenticationScheme);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Authentication
             if (handler != null)
             {
                 await handler.InitializeAsync(scheme, context);
-                _handlerMap[authenticationScheme[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = handler;
+                _handlerMap[authenticationScheme] = handler;
             }
             return handler;
         }
