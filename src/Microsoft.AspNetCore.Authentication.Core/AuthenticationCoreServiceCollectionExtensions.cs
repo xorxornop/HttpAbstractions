@@ -15,16 +15,13 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class AuthenticationCoreServiceCollectionExtensions
     {
-        public static IServiceCollection AddAuthentication(this IServiceCollection services)
+        public static IServiceCollection AddAuthenticationCore(this IServiceCollection services)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.TryAddSingleton<ISystemClock, SystemClock>();
-            services.AddDataProtection();
-            services.AddWebEncoders();
             services.TryAddScoped<IAuthenticationService, AuthenticationService>();
             services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
             services.TryAddScoped<IAuthenticationHandlerProvider, AuthenticationHandlerProvider>();
@@ -32,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
+        public static IServiceCollection AddAuthenticationCore(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
@@ -43,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            services.AddAuthentication();
+            services.AddAuthenticationCore();
             services.Configure(configureOptions);
             return services;
         }
