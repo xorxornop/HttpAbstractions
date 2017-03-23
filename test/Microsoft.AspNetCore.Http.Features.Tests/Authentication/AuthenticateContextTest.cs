@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
+#pragma warning disable 618
 namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
     public class AuthenticateContextTest
@@ -160,3 +161,4 @@ namespace Microsoft.AspNetCore.Http.Features.Authentication
         }
     }
 }
+#pragma warning restore 618

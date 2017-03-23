@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Authentication
             var builder = new AuthenticationSchemeBuilder(name);
             configureBuilder(builder);
             _schemes.Add(builder);
-            SchemeMap[name] = builder;
+            SchemeMap[name[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = builder;
         }
 
         public void ConfigureScheme(string name, Action<AuthenticationSchemeBuilder> configureBuilder)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new InvalidOperationException("Scheme does not exists: " + name);
             }
 
-            configureBuilder(SchemeMap[name]);
+            configureBuilder(SchemeMap[name[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]);
         }
 
         public string DefaultAuthenticationScheme { get; set; }

@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Authentication
             return string.Format(CultureInfo.CurrentCulture, GetString("Exception_OptionMustBeProvided"), p0);
         }
 
-        private static string GetString(string name, params string[] formatterNames)
+        private static string GetString(string name, params string[[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] formatterNames)
         {
             var value = _resourceManager.GetString(name);
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 for (var i = 0; i < formatterNames.Length; i++)
                 {
-                    value = value.Replace("{" + formatterNames[i] + "}", "{" + i + "}");
+                    value = value.Replace("{" + formatterNames[i[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] + "}", "{" + i + "}");
                 }
             }
 

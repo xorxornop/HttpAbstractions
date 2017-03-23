@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Xunit;
 
+#pragma warning disable 618
 namespace Microsoft.AspNetCore.Http.Authentication.Internal
 {
     public class DefaultAuthenticationManagerTests
@@ -100,3 +101,4 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
         }
     }
 }
+#pragma warning restore 618

@@ -7,6 +7,7 @@ using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
+    [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
     public class SignInContext
     {
         public SignInContext(string authenticationScheme, ClaimsPrincipal principal, IDictionary<string, string> properties)

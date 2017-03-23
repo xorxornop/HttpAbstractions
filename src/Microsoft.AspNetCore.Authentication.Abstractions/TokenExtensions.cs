@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // REVIEW: should probably check that there are no ; in the token name and throw or encode
                 tokenNames.Add(token.Name);
-                properties.Items[TokenKeyPrefix+token.Name] = token.Value;
+                properties.Items[TokenKeyPrefix+token.Name[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = token.Value;
             }
             if (tokenNames.Count > 0)
             {
-                properties.Items[TokenNamesKey] = string.Join(";", tokenNames.ToArray());
+                properties.Items[TokenNamesKey[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = string.Join(";", tokenNames.ToArray());
             }
         }
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             var tokenKey = TokenKeyPrefix + tokenName;
             return properties.Items.ContainsKey(tokenKey)
-                ? properties.Items[tokenKey]
+                ? properties.Items[tokenKey[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
                 : null;
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 return false;
             }
-            properties.Items[tokenKey] = tokenValue;
+            properties.Items[tokenKey[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = tokenValue;
             return true;
         }
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication
             var tokens = new List<AuthenticationToken>();
             if (properties.Items.ContainsKey(TokenNamesKey))
             {
-                var tokenNames = properties.Items[TokenNamesKey].Split(';');
+                var tokenNames = properties.Items[TokenNamesKey[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)].Split(';');
                 foreach (var name in tokenNames)
                 {
                     var token = properties.GetTokenValue(name);

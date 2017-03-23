@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (value != null)
                 {
-                    Items[RedirectUriKey] = value;
+                    Items[RedirectUriKey[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = value;
                 }
                 else
                 {
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (value.HasValue)
                 {
-                    Items[IssuedUtcKey] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
+                    Items[IssuedUtcKey[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (value.HasValue)
                 {
-                    Items[ExpiresUtcKey] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
+                    Items[ExpiresUtcKey[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
                 }
                 else
                 {
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (value.HasValue)
                 {
-                    Items[RefreshKey] = value.Value.ToString();
+                    Items[RefreshKey[Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)] = value.Value.ToString();
                 }
                 else
                 {

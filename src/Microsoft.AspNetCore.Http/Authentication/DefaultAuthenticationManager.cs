@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features.Authentication;
 
 namespace Microsoft.AspNetCore.Http.Authentication.Internal
 {
+    [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
     public class DefaultAuthenticationManager : AuthenticationManager
     {
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
@@ -35,11 +36,13 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
             _features = default(FeatureReferences<IHttpAuthenticationFeature>);
         }
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public override HttpContext HttpContext => _context;
 
         private IHttpAuthenticationFeature HttpAuthenticationFeature =>
             _features.Fetch(ref _features.Cache, _newAuthenticationFeature);
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public override IEnumerable<AuthenticationDescription> GetAuthenticationSchemes()
         {
             var handler = HttpAuthenticationFeature.Handler;
@@ -54,6 +57,7 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
         }
 
         // Remove once callers have been switched to GetAuthenticateInfoAsync
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public override async Task AuthenticateAsync(AuthenticateContext context)
         {
             if (context == null)
@@ -73,6 +77,7 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
             }
         }
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public override async Task<AuthenticateInfo> GetAuthenticateInfoAsync(string authenticationScheme)
         {
             if (authenticationScheme == null)
@@ -100,6 +105,7 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
             };
         }
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public override async Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
         {
             if (string.IsNullOrEmpty(authenticationScheme))
@@ -121,6 +127,7 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
             }
         }
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public override async Task SignInAsync(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
             if (string.IsNullOrEmpty(authenticationScheme))
@@ -147,6 +154,7 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
             }
         }
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public override async Task SignOutAsync(string authenticationScheme, AuthenticationProperties properties)
         {
             if (string.IsNullOrEmpty(authenticationScheme))

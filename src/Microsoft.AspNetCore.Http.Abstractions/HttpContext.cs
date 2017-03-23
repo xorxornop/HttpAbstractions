@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets an object that facilitates authentication for this request.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public abstract AuthenticationManager Authentication { get; }
 
         /// <summary>
