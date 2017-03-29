@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        public IDictionary<string, AuthenticationSchemeBuilder> SchemeMap { get; } = new Dictionary<string, AuthenticationSchemeBuilder>(); // case sensitive?
+        public IDictionary<string, AuthenticationSchemeBuilder> SchemeMap { get; } = new Dictionary<string, AuthenticationSchemeBuilder>(StringComparer.Ordinal);
 
         public void AddScheme(string name, Action<AuthenticationSchemeBuilder> configureBuilder)
         {
@@ -42,24 +42,6 @@ namespace Microsoft.AspNetCore.Authentication
             configureBuilder(builder);
             _schemes.Add(builder);
             SchemeMap[name] = builder;
-        }
-
-        public void ConfigureScheme(string name, Action<AuthenticationSchemeBuilder> configureBuilder)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-            if (configureBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(configureBuilder));
-            }
-            if (!SchemeMap.ContainsKey(name))
-            {
-                throw new InvalidOperationException("Scheme does not exists: " + name);
-            }
-
-            configureBuilder(SchemeMap[name]);
         }
 
         public string DefaultAuthenticationScheme { get; set; }
