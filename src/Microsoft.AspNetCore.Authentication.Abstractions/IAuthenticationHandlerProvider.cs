@@ -11,6 +11,12 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public interface IAuthenticationHandlerProvider
     {
+        /// <summary>
+        /// Returns the handler instance that will be used.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="authenticationScheme">The name of the authentication scheme being handled.</param>
+        /// <returns></returns>
         Task<IAuthenticationHandler> GetHandlerAsync(HttpContext context, string authenticationScheme);
     }
 }

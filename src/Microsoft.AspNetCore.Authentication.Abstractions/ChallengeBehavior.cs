@@ -3,6 +3,9 @@
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Controls how challenge will behave (i.e. 401 vs 403).
+    /// </summary>
     public enum ChallengeBehavior
     {
         Automatic,

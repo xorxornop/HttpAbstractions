@@ -6,8 +6,17 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Base context for authentication.
+    /// </summary>
     public abstract class BaseAuthenticationContext : BaseContext
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="authenticationScheme">The name of the scheme.</param>
+        /// <param name="properties">The properties.</param>
         protected BaseAuthenticationContext(HttpContext context, string authenticationScheme, AuthenticationProperties properties) : base(context)
         {
             if (string.IsNullOrEmpty(authenticationScheme))
@@ -19,6 +28,9 @@ namespace Microsoft.AspNetCore.Authentication
             Properties = properties ?? new AuthenticationProperties();
         }
 
+        /// <summary>
+        /// The name of the scheme.
+        /// </summary>
         public string AuthenticationScheme { get; }
 
         /// <summary>

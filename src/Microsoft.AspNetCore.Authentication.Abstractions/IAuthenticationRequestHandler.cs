@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Used to determine if a handler wants to participate in request processing.
+    /// </summary>
     public interface IAuthenticationRequestHandler : IAuthenticationHandler
     {
 
