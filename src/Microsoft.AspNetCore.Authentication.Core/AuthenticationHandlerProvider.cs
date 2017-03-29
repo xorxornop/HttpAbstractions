@@ -9,18 +9,34 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Implementation of <see cref="IAuthenticationHandlerProvider"/>.
+    /// </summary>
     public class AuthenticationHandlerProvider : IAuthenticationHandlerProvider
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="schemes">The <see cref="IAuthenticationHandlerProvider"/>.</param>
         public AuthenticationHandlerProvider(IAuthenticationSchemeProvider schemes)
         {
             Schemes = schemes;
         }
 
+        /// <summary>
+        /// The <see cref="IAuthenticationHandlerProvider"/>.
+        /// </summary>
         public IAuthenticationSchemeProvider Schemes { get; }
 
         // handler instance cache, need to initialize once per request
         private Dictionary<string, IAuthenticationHandler> _handlerMap = new Dictionary<string, IAuthenticationHandler>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Returns the handler instance that will be used.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="authenticationScheme">The name of the authentication scheme being handled.</param>
+        /// <returns>The handler instance.</returns>
         public async Task<IAuthenticationHandler> GetHandlerAsync(HttpContext context, string authenticationScheme)
         {
             if (_handlerMap.ContainsKey(authenticationScheme))

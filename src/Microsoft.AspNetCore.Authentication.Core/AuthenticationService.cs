@@ -8,8 +8,17 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// Implements <see cref="IAuthenticationService"/>.
+    /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
+        /// <param name="handlers">The <see cref="IAuthenticationRequestHandler"/>.</param>
+        /// <param name="transform">The The <see cref="IClaimsTransformation"/>.</param>
         public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform)
         {
             Schemes = schemes;
@@ -17,33 +26,47 @@ namespace Microsoft.AspNetCore.Authentication
             Transform = transform;
         }
 
+        /// <summary>
+        /// Used to lookup AuthenticationSchemes.
+        /// </summary>
         public IAuthenticationSchemeProvider Schemes { get; }
 
-
+        /// <summary>
+        /// Used to resolve IAuthenticationHandler instances.
+        /// </summary>
         public IAuthenticationHandlerProvider Handlers { get; }
 
+        /// <summary>
+        /// Used for claims transformation.
+        /// </summary>
         public IClaimsTransformation Transform { get; }
 
-        public virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext httpContext, string authenticationScheme)
+        /// <summary>
+        /// Authenticate for the specified authentication scheme.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The name of the authentication scheme.</param>
+        /// <returns>The result.</returns>
+        public virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme)
         {
-            if (authenticationScheme == null)
+            if (scheme == null)
             {
                 var defaultScheme = await Schemes.GetDefaultAuthenticateSchemeAsync();
-                authenticationScheme = defaultScheme?.Name;
-                if (authenticationScheme == null)
+                scheme = defaultScheme?.Name;
+                if (scheme == null)
                 {
                     throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found.");
                 }
             }
 
-            var handler = await Handlers.GetHandlerAsync(httpContext, authenticationScheme);
+            var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to authenticate for the scheme: {authenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to authenticate for the scheme: {scheme}");
             }
 
-            var context = new AuthenticateContext(httpContext, authenticationScheme);
-            var result = await handler.AuthenticateAsync(context);
+            var authContext = new AuthenticateContext(context, scheme);
+            var result = await handler.AuthenticateAsync(authContext);
             if (result.Succeeded)
             {
                 var transformed = await Transform.TransformAsync(result.Principal);
@@ -52,82 +75,93 @@ namespace Microsoft.AspNetCore.Authentication
             return result;
         }
 
-        public virtual async Task ChallengeAsync(HttpContext httpContext, string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior)
+        /// <summary>
+        /// Challenge the specified authentication scheme.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The name of the authentication scheme.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <param name="behavior">The <see cref="ChallengeBehavior"/>.</param>
+        /// <returns>A task.</returns>
+        public virtual async Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties, ChallengeBehavior behavior)
         {
-            if (authenticationScheme == null)
+            if (scheme == null)
             {
                 var defaultChallengeScheme = await Schemes.GetDefaultChallengeSchemeAsync();
-                authenticationScheme = defaultChallengeScheme?.Name;
-                if (authenticationScheme == null)
+                scheme = defaultChallengeScheme?.Name;
+                if (scheme == null)
                 {
                     throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found.");
                 }
             }
 
-            var handler = await Handlers.GetHandlerAsync(httpContext, authenticationScheme);
+            var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {authenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
             }
 
-            var challengeContext = new ChallengeContext(httpContext, authenticationScheme, properties, behavior);
+            var challengeContext = new ChallengeContext(context, scheme, properties, behavior);
             await handler.ChallengeAsync(challengeContext);
         }
 
-        public virtual async Task SignInAsync(HttpContext httpContext, string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
+        /// <summary>
+        /// Sign a principal in for the specified authentication scheme.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The name of the authentication scheme.</param>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> to sign in.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <returns>A task.</returns>
+        public virtual async Task SignInAsync(HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
             }
 
-            if (authenticationScheme == null)
+            if (scheme == null)
             {
                 var defaultScheme = await Schemes.GetDefaultSignInSchemeAsync();
-                authenticationScheme = defaultScheme?.Name;
-                if (authenticationScheme == null)
+                scheme = defaultScheme?.Name;
+                if (scheme == null)
                 {
                     throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found.");
                 }
             }
 
-            var handler = await Handlers.GetHandlerAsync(httpContext, authenticationScheme);
+            var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {authenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
             }
 
-            var signInContext = new SignInContext(httpContext, authenticationScheme, principal, properties);
+            var signInContext = new SignInContext(context, scheme, principal, properties);
             await handler.SignInAsync(signInContext);
         }
 
-        public virtual async Task SignOutAsync(HttpContext httpContext, string authenticationScheme, AuthenticationProperties properties)
+        /// <summary>
+        /// Sign out the specified authentication scheme.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="scheme">The name of the authentication scheme.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
+        /// <returns>A task.</returns>
+        public virtual async Task SignOutAsync(HttpContext context, string scheme, AuthenticationProperties properties)
         {
-            if (string.IsNullOrEmpty(authenticationScheme))
+            if (string.IsNullOrEmpty(scheme))
             {
-                throw new ArgumentException(nameof(authenticationScheme));
+                throw new ArgumentException(nameof(scheme));
             }
 
-            var handler = await Handlers.GetHandlerAsync(httpContext, authenticationScheme);
+            var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {authenticationScheme}");
+                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
             }
 
-            var signOutContext = new SignOutContext(httpContext, authenticationScheme, properties);
+            var signOutContext = new SignOutContext(context, scheme, properties);
             await handler.SignOutAsync(signOutContext);
         }
-
-        // Deny access (typically a 403)
-        public virtual Task ForbidAsync(HttpContext httpContext, string authenticationScheme, AuthenticationProperties properties)
-        {
-            if (authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
-            return ChallengeAsync(httpContext, authenticationScheme, properties, ChallengeBehavior.Forbidden);
-        }
-
     }
 }

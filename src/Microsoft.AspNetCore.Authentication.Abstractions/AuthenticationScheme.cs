@@ -6,8 +6,17 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Authentication
 {
+    /// <summary>
+    /// AuthenticationSchemes are basically a name for a specific <see cref="IAuthenticationHandler"/>
+    /// handlerType.
+    /// </summary>
     public class AuthenticationScheme
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="name">The name for the authentication scheme.</param>
+        /// <param name="handlerType">The <see cref="IAuthenticationHandler"/> type that handles this scheme.</param>
         public AuthenticationScheme(string name, Type handlerType)
         {
             if (name == null)
@@ -28,7 +37,14 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         // TODO: add display name?
+        /// <summary>
+        /// The name of the authentication scheme.
+        /// </summary>
         public string Name { get; }
+
+        /// <summary>
+        /// The <see cref="IAuthenticationHandler"/> type that handles this scheme.
+        /// </summary>
         public Type HandlerType { get; }
     }
 }

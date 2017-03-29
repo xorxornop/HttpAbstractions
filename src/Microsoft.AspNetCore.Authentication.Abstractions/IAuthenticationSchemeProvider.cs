@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
-        /// This is typically specified via <see cref="AuthenticationOptions.DefaultChallengeScheme"/>.
+        /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
         /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.</returns>
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the schemes in priority order for request handling.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The schemes in priority order for request handling</returns>
         Task<IEnumerable<AuthenticationScheme>> GetRequestHandlerSchemesAsync();
     }
 }

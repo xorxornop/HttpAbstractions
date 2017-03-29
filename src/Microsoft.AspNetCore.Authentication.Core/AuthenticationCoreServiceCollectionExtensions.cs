@@ -2,11 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -15,6 +12,11 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class AuthenticationCoreServiceCollectionExtensions
     {
+        /// <summary>
+        /// Add core authentication services needed for <see cref="IAuthenticationService"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>The service collection.</returns>
         public static IServiceCollection AddAuthenticationCore(this IServiceCollection services)
         {
             if (services == null)
@@ -29,6 +31,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+        /// <summary>
+        /// Add core authentication services needed for <see cref="IAuthenticationService"/>.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="configureOptions">Used to configure the <see cref="AuthenticationOptions"/>.</param>
+        /// <returns>The service collection.</returns>
         public static IServiceCollection AddAuthenticationCore(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
             if (services == null)
             {

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Authentication
 {
     /// <summary>
-    /// Feature used to remember the original path/base.
+    /// Used to capture path info so redirects can be computed properly within an app.Map().
     /// </summary>
     public interface IAuthenticationFeature
     {

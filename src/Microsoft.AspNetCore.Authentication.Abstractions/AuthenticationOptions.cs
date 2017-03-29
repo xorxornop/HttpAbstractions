@@ -13,13 +13,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the schemes in the order they were added (important for request handling priority)
         /// </summary>
-        public IEnumerable<AuthenticationSchemeBuilder> Schemes
-        {
-            get
-            {
-                return _schemes;
-            }
-        }
+        public IEnumerable<AuthenticationSchemeBuilder> Schemes => _schemes;
 
         public IDictionary<string, AuthenticationSchemeBuilder> SchemeMap { get; } = new Dictionary<string, AuthenticationSchemeBuilder>(StringComparer.Ordinal);
 
