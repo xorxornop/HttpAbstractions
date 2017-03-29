@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication
         private readonly AuthenticationOptions _options;
         private readonly object _lock = new object();
 
-        private IDictionary<string, AuthenticationScheme> _map = new Dictionary<string, AuthenticationScheme>(StringComparer.Ordinal); // case sensitive?
+        private IDictionary<string, AuthenticationScheme> _map = new Dictionary<string, AuthenticationScheme>(StringComparer.Ordinal);
 
         private List<AuthenticationScheme> _requestHandlers = new List<AuthenticationScheme>();
 
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Authentication
             return Task.FromResult<AuthenticationScheme>(null);
         }
 
-        public Task<IEnumerable<AuthenticationScheme>> GetRequestHandlerSchemesAsync(PathString requestPath)
+        public Task<IEnumerable<AuthenticationScheme>> GetRequestHandlerSchemesAsync()
         {
             return Task.FromResult<IEnumerable<AuthenticationScheme>>(_requestHandlers);
         }

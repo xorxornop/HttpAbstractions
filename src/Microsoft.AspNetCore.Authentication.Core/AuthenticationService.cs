@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Authentication
                 authenticationScheme = defaultScheme?.Name;
                 if (authenticationScheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultSignInScheme found.");
                 }
             }
 
