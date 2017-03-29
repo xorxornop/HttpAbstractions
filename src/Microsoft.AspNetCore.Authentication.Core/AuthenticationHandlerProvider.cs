@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Authentication
         public IAuthenticationSchemeProvider Schemes { get; }
 
         // handler instance cache, need to initialize once per request
-        private Dictionary<string, IAuthenticationHandler> _handlerMap = new Dictionary<string, IAuthenticationHandler>();
+        private Dictionary<string, IAuthenticationHandler> _handlerMap = new Dictionary<string, IAuthenticationHandler>(StringComparer.Ordinal);
 
         public async Task<IAuthenticationHandler> GetHandlerAsync(HttpContext context, string authenticationScheme)
         {
