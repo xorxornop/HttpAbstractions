@@ -15,8 +15,16 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public IEnumerable<AuthenticationSchemeBuilder> Schemes => _schemes;
 
+        /// <summary>
+        /// Maps schemes by name.
+        /// </summary>
         public IDictionary<string, AuthenticationSchemeBuilder> SchemeMap { get; } = new Dictionary<string, AuthenticationSchemeBuilder>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Adds an <see cref="AuthenticationScheme"/>.
+        /// </summary>
+        /// <param name="name">The name of the scheme being added.</param>
+        /// <param name="configureBuilder">Configures the scheme.</param>
         public void AddScheme(string name, Action<AuthenticationSchemeBuilder> configureBuilder)
         {
             if (name == null)
@@ -38,8 +46,19 @@ namespace Microsoft.AspNetCore.Authentication
             SchemeMap[name] = builder;
         }
 
+        /// <summary>
+        /// Used by as the default scheme by <see cref="IAuthenticationService.AuthenticateAsync(Http.HttpContext, string)"/>.
+        /// </summary>
         public string DefaultAuthenticationScheme { get; set; }
+
+        /// <summary>
+        /// Used by as the default scheme by <see cref="IAuthenticationService.SignInAsync(Http.HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
+        /// </summary>
         public string DefaultSignInScheme { get; set; }
+
+        /// <summary>
+        /// Used by as the default scheme by <see cref="IAuthenticationService.ChallengeAsync(Http.HttpContext, string, AuthenticationProperties, ChallengeBehavior)"/>.
+        /// </summary>
         public string DefaultChallengeScheme { get; set; }
     }
 }
