@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core common types used by the various authentication middleware components.</Description>
-    <VersionPrefix>1.2.0</VersionPrefix>
     <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -16,7 +15,7 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Authentication.Abstractions\Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Http\Microsoft.AspNetCore.Http.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Http.Extensions\Microsoft.AspNetCore.Http.Extensions.csproj" />
-    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="1.2.0-*" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.TaskCache.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
