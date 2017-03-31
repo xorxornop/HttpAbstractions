@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Http.Authentication
     /// <summary>
     /// Contains information describing an authentication provider.
     /// </summary>
+    [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
     public class AuthenticationDescription
     {
         private const string DisplayNamePropertyKey = "DisplayName";

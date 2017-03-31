@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Http.Authentication
     /// <summary>
     /// Dictionary used to store state values about the authentication session.
     /// </summary>
+    [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
     public class AuthenticationProperties
     {
         internal const string IssuedUtcKey = ".issued";
@@ -39,11 +40,13 @@ namespace Microsoft.AspNetCore.Http.Authentication
         /// <summary>
         /// State values about the authentication session.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public IDictionary<string, string> Items { get; }
 
         /// <summary>
         /// Gets or sets whether the authentication session is persisted across multiple requests.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public bool IsPersistent
         {
             get { return Items.ContainsKey(IsPersistentKey); }
@@ -69,6 +72,7 @@ namespace Microsoft.AspNetCore.Http.Authentication
         /// <summary>
         /// Gets or sets the full path or absolute URI to be used as an http redirect response value.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public string RedirectUri
         {
             get
@@ -95,6 +99,7 @@ namespace Microsoft.AspNetCore.Http.Authentication
         /// <summary>
         /// Gets or sets the time at which the authentication ticket was issued.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public DateTimeOffset? IssuedUtc
         {
             get
@@ -129,6 +134,7 @@ namespace Microsoft.AspNetCore.Http.Authentication
         /// <summary>
         /// Gets or sets the time at which the authentication ticket expires.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public DateTimeOffset? ExpiresUtc
         {
             get
@@ -163,6 +169,7 @@ namespace Microsoft.AspNetCore.Http.Authentication
         /// <summary>
         /// Gets or sets if refreshing the authentication session should be allowed.
         /// </summary>
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public bool? AllowRefresh
         {
             get

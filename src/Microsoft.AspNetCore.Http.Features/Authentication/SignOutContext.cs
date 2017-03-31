@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
+    [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
     public class SignOutContext
     {
         public SignOutContext(string authenticationScheme, IDictionary<string, string> properties)

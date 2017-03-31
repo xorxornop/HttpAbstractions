@@ -279,6 +279,7 @@ namespace Microsoft.AspNetCore.Owin
             }
         }
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
 
         /// <summary>

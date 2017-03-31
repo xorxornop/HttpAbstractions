@@ -28,7 +28,9 @@ namespace Microsoft.AspNetCore.Http
 
         private HttpRequest _request;
         private HttpResponse _response;
+#pragma warning disable 618
         private AuthenticationManager _authenticationManager;
+#pragma warning restore 618
         private ConnectionInfo _connection;
         private WebSocketManager _websockets;
 
@@ -66,7 +68,9 @@ namespace Microsoft.AspNetCore.Http
             }
             if (_authenticationManager != null)
             {
+#pragma warning disable 618
                 UninitializeAuthenticationManager(_authenticationManager);
+#pragma warning restore 618
                 _authenticationManager = null;
             }
             if (_connection != null)
@@ -111,6 +115,7 @@ namespace Microsoft.AspNetCore.Http
 
         public override ConnectionInfo Connection => _connection ?? (_connection = InitializeConnectionInfo());
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         public override AuthenticationManager Authentication => _authenticationManager ?? (_authenticationManager = InitializeAuthenticationManager());
 
         public override WebSocketManager WebSockets => _websockets ?? (_websockets = InitializeWebSocketManager());
@@ -190,7 +195,9 @@ namespace Microsoft.AspNetCore.Http
         protected virtual ConnectionInfo InitializeConnectionInfo() => new DefaultConnectionInfo(Features);
         protected virtual void UninitializeConnectionInfo(ConnectionInfo instance) { }
 
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         protected virtual AuthenticationManager InitializeAuthenticationManager() => new DefaultAuthenticationManager(this);
+        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
         protected virtual void UninitializeAuthenticationManager(AuthenticationManager instance) { }
 
         protected virtual WebSocketManager InitializeWebSocketManager() => new DefaultWebSocketManager(Features);
