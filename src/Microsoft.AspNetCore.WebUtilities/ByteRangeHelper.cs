@@ -20,40 +20,48 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 return normalizedRanges;
             }
+
             foreach (var range in ranges)
             {
-                var start = range.From;
-                var end = range.To;
-
-                // X-[Y]
-                if (start.HasValue)
-                {
-                    if (start.Value >= length)
-                    {
-                        // Not satisfiable, skip/discard.
-                        continue;
-                    }
-                    if (!end.HasValue || end.Value >= length)
-                    {
-                        end = length - 1;
-                    }
-                }
-                else
-                {
-                    // suffix range "-X" e.g. the last X bytes, resolve
-                    if (end.Value == 0)
-                    {
-                        // Not satisfiable, skip/discard.
-                        continue;
-                    }
-
-                    var bytes = Math.Min(end.Value, length);
-                    start = length - bytes;
-                    end = start + bytes - 1;
-                }
-                normalizedRanges.Add(new RangeItemHeaderValue(start.Value, end.Value));
+                var normalizedRange = NormalizeRange(range, length);
+                normalizedRanges.Add(normalizedRange);
             }
+
             return normalizedRanges;
+        }
+
+        public static RangeItemHeaderValue NormalizeRange(RangeItemHeaderValue range, long length)
+        {
+            var start = range.From;
+            var end = range.To;
+
+            // X-[Y]
+            if (start.HasValue)
+            {
+                if (start.Value >= length)
+                {
+                    // Not satisfiable, skip/discard.
+                }
+                if (!end.HasValue || end.Value >= length)
+                {
+                    end = length - 1;
+                }
+            }
+            else
+            {
+                // suffix range "-X" e.g. the last X bytes, resolve
+                if (end.Value == 0)
+                {
+                    // Not satisfiable, skip/discard.
+                }
+
+                var bytes = Math.Min(end.Value, length);
+                start = length - bytes;
+                end = start + bytes - 1;
+            }
+
+            var normalizedRange = new RangeItemHeaderValue(start, end);
+            return normalizedRange;
         }
     }
 }
