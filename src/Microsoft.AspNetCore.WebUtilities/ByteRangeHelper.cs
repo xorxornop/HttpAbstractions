@@ -20,17 +20,20 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return Array.Empty<RangeItemHeaderValue>();
             }
 
-            var normalizedRanges = new List<RangeItemHeaderValue>(ranges.Count);
-
             if (length == 0)
             {
-                return normalizedRanges;
+                return Array.Empty<RangeItemHeaderValue>();
             }
 
+            var normalizedRanges = new List<RangeItemHeaderValue>(ranges.Count);
             foreach (var range in ranges)
             {
                 var normalizedRange = NormalizeRange(range, length);
-                normalizedRanges.Add(normalizedRange);
+
+                if (normalizedRange != null)
+                {
+                    normalizedRanges.Add(normalizedRange);
+                }
             }
 
             return normalizedRanges;
@@ -47,6 +50,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (start.Value >= length)
                 {
                     // Not satisfiable, skip/discard.
+                    return null;
                 }
                 if (!end.HasValue || end.Value >= length)
                 {
@@ -59,6 +63,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (end.Value == 0)
                 {
                     // Not satisfiable, skip/discard.
+                    return null;
                 }
 
                 var bytes = Math.Min(end.Value, length);

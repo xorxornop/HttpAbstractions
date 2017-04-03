@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public void NormalizeRanges_ReturnsEmptyListWhenLengthZero()
+        public void NormalizeRanges_ReturnsEmptyArrayWhenLengthZero()
         {
             // Arrange
             var ranges = new[]
@@ -33,6 +33,40 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // Act
             var normalizedRanges = ByteRangeHelper.NormalizeRanges(ranges, 0);
+
+            // Assert
+            Assert.Empty(normalizedRanges);
+        }
+
+        [Theory]
+        [InlineData(1, 2)]
+        [InlineData(2, 3)]
+        public void NormalizeRanges_SkipsItemWhenRangeStartEqualOrGreaterThanLength(long start, long end)
+        {
+            // Arrange
+            var ranges = new[]
+            {
+                new RangeItemHeaderValue(start, end),
+            };
+
+            // Act
+            var normalizedRanges = ByteRangeHelper.NormalizeRanges(ranges, 1);
+
+            // Assert
+            Assert.Empty(normalizedRanges);
+        }
+
+        [Fact]
+        public void NormalizeRanges_SkipsItemWhenRangeEndEqualsZero()
+        {
+            // Arrange
+            var ranges = new[]
+            {
+                new RangeItemHeaderValue(null, 0),
+            };
+
+            // Act
+            var normalizedRanges = ByteRangeHelper.NormalizeRanges(ranges, 1);
 
             // Assert
             Assert.Empty(normalizedRanges);
