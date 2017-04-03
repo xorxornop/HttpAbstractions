@@ -7,23 +7,23 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    internal static class ByteRangeHelper
+    public static class ByteRangeHelper
     {
         // 14.35.1 Byte Ranges - If a syntactically valid byte-range-set includes at least one byte-range-spec whose
         // first-byte-pos is less than the current length of the entity-body, or at least one suffix-byte-range-spec
         // with a non-zero suffix-length, then the byte-range-set is satisfiable.
         // Adjusts ranges to be absolute and within bounds.
-        internal static IList<RangeItemHeaderValue> NormalizeRanges(ICollection<RangeItemHeaderValue> ranges, long length)
+        public static IList<RangeItemHeaderValue> NormalizeRanges(ICollection<RangeItemHeaderValue> ranges, long length)
         {
-            IList<RangeItemHeaderValue> normalizedRanges = new List<RangeItemHeaderValue>(ranges.Count);
+            var normalizedRanges = new List<RangeItemHeaderValue>(ranges.Count);
             if (length == 0)
             {
                 return normalizedRanges;
             }
             foreach (var range in ranges)
             {
-                long? start = range.From;
-                long? end = range.To;
+                var start = range.From;
+                var end = range.To;
 
                 // X-[Y]
                 if (start.HasValue)
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                         continue;
                     }
 
-                    long bytes = Math.Min(end.Value, length);
+                    var bytes = Math.Min(end.Value, length);
                     start = length - bytes;
                     end = start + bytes - 1;
                 }
