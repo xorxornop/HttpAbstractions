@@ -15,7 +15,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         // Adjusts ranges to be absolute and within bounds.
         public static IList<RangeItemHeaderValue> NormalizeRanges(ICollection<RangeItemHeaderValue> ranges, long length)
         {
+            if (ranges.Count == 0)
+            {
+                return Array.Empty<RangeItemHeaderValue>();
+            }
+
             var normalizedRanges = new List<RangeItemHeaderValue>(ranges.Count);
+
             if (length == 0)
             {
                 return normalizedRanges;

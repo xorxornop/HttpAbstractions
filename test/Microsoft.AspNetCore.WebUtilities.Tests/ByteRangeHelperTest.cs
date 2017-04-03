@@ -2,12 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Net.Http.Headers;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
     public class ByteRangeHelperTest
     {
+        [Fact]
+        public void NormalizeRanges_ReturnsEmptyArrayWhenRangeCountZero()
+        {
+            // Arrange
+            var ranges = new List<RangeItemHeaderValue>();
+
+            // Act
+            var normalizedRanges = ByteRangeHelper.NormalizeRanges(ranges, 2);
+
+            // Assert
+            Assert.Empty(normalizedRanges);
+        }
+
         [Fact]
         public void NormalizeRanges_ReturnsEmptyListWhenLengthZero()
         {
