@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.ObjectModel;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -94,39 +95,6 @@ namespace Microsoft.AspNetCore.Http.Extensions
             var parsedRange = Assert.Single(parsedRangeResult);
             Assert.Equal(1, parsedRange.From);
             Assert.Equal(2, parsedRange.To);
-        }
-
-        [Fact]
-        public void ParseRange_ReturnsMultipleRangesWhenInputValid()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            var ranges = new[]
-            {
-                new RangeHeaderValue(1, 2),
-                new RangeHeaderValue(4, 5),
-            };
-            httpContext.Request.Headers[HeaderNames.Range] = ranges.ToString();
-            var lastModified = new RangeConditionHeaderValue(DateTime.Now);
-            httpContext.Request.Headers[HeaderNames.IfRange] = lastModified.ToString();
-            var etag = new RangeConditionHeaderValue("\"etag\"");
-            httpContext.Request.Headers[HeaderNames.IfRange] = etag.ToString();
-
-            // Act
-            var parsedRangeResult = RangeParser.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), DateTime.Now, new EntityTagHeaderValue("\"etag\""));
-
-            // Assert
-            Assert.Collection(parsedRangeResult,
-                range =>
-                {
-                    Assert.Equal(1, range.From);
-                    Assert.Equal(2, range.To);
-                },
-                range =>
-                {
-                    Assert.Equal(4, range.From);
-                    Assert.Equal(5, range.To);
-                });
         }
     }
 }
