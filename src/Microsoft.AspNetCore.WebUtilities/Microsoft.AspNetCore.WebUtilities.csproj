@@ -13,8 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Net.Http.Headers\Microsoft.Net.Http.Headers.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Http.Abstractions\Microsoft.AspNetCore.Http.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Http.Extensions\Microsoft.AspNetCore.Http.Extensions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
