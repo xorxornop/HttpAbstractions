@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    public class ByteRangeHelperTest
+    public class ByteRangeHelperTests
     {
         [Fact]
         public void NormalizeRanges_ReturnsEmptyArrayWhenRangeCountZero()

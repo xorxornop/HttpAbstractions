@@ -10,8 +10,19 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Extensions
 {
+    /// <summary>
+    /// Provides a parser for the Range Header in an <see cref="HttpContext.Request"/>.
+    /// </summary>
     public class RangeParser
     {
+        /// <summary>
+        /// Returns the requested range if the Range Header in the <see cref="HttpContext.Request"/> is valid.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> associated with the request.</param>
+        /// <param name="requestHeaders">The <see cref="RequestHeaders"/> associated with the given <paramref name="context"/>.</param>
+        /// <param name="lastModified">The <see cref="DateTimeOffset"/> representation of the last modified date of the file.</param>
+        /// <param name="etag">The <see cref="EntityTagHeaderValue"/> provided in the <see cref="HttpContext.Request"/>.</param>
+        /// <returns>A collection of <see cref="RangeItemHeaderValue"/> containing the ranges parsed from the <paramref name="requestHeaders"/>.</returns>
         public static ICollection<RangeItemHeaderValue> ParseRange(HttpContext context, RequestHeaders requestHeaders, DateTimeOffset lastModified, EntityTagHeaderValue etag)
         {
             var rawRangeHeader = context.Request.Headers[HeaderNames.Range];
