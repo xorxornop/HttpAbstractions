@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -141,6 +143,91 @@ namespace Microsoft.AspNetCore.WebUtilities
                     Assert.Equal(1, range.From);
                     Assert.Equal(2, range.To);
                 });
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void ParseRange_ReturnsFalseWhenRangeHeaderNotProvided(string range)
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers[HeaderNames.Range] = range;
+
+            // Act
+            var parseRange = ByteRangeHelper.ParseRange(httpContext, new DateTimeOffset(), null);
+
+            // Assert
+            Assert.False(parseRange);
+        }
+
+        [Theory]
+        [InlineData("1-2, 3-4")]
+        [InlineData("1-2, ")]
+        public void ParseRange_ReturnsFalseWhenMultipleRangesProvidedInRangeHeader(string range)
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Headers[HeaderNames.Range] = range;
+
+            // Act
+            var parseRange = ByteRangeHelper.ParseRange(httpContext, new DateTimeOffset(), null);
+
+            // Assert
+            Assert.False(parseRange);
+        }
+
+        [Fact]
+        public void ParseRange_ReturnsFalseWhenLastModifiedGreaterThanIfRangeHeaderLastModified()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            var range = new RangeHeaderValue(1, 2);
+            httpContext.Request.Headers[HeaderNames.Range] = range.ToString();
+            var lastModified = new RangeConditionHeaderValue(DateTime.Now);
+            httpContext.Request.Headers[HeaderNames.IfRange] = lastModified.ToString();
+
+            // Act
+            var parseRange = ByteRangeHelper.ParseRange(httpContext, DateTime.Now.AddMilliseconds(2), null);
+
+            // Assert
+            Assert.False(parseRange);
+        }
+
+        [Fact]
+        public void ParseRange_ReturnsFalseWhenETagNotEqualToIfRangeHeaderEntityTag()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            var range = new RangeHeaderValue(1, 2);
+            httpContext.Request.Headers[HeaderNames.Range] = range.ToString();
+            var etag = new RangeConditionHeaderValue("\"tag\"");
+            httpContext.Request.Headers[HeaderNames.IfRange] = etag.ToString();
+
+            // Act
+            var parseRange = ByteRangeHelper.ParseRange(httpContext, DateTime.Now, new EntityTagHeaderValue("\"etag\""));
+
+            // Assert
+            Assert.False(parseRange);
+        }
+
+        [Fact]
+        public void ParseRange_ReturnsTrueWhenInputValid()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            var range = new RangeHeaderValue(1, 2);
+            httpContext.Request.Headers[HeaderNames.Range] = range.ToString();
+            var lastModified = new RangeConditionHeaderValue(DateTime.Now);
+            httpContext.Request.Headers[HeaderNames.IfRange] = lastModified.ToString();
+            var etag = new RangeConditionHeaderValue("\"etag\"");
+            httpContext.Request.Headers[HeaderNames.IfRange] = etag.ToString();
+
+            // Act
+            var parseRange = ByteRangeHelper.ParseRange(httpContext, DateTime.Now, new EntityTagHeaderValue("\"etag\""));
+
+            // Assert
+            Assert.True(parseRange);
         }
     }
 }
