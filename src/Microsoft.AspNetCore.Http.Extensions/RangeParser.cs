@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> representation of the last modified date of the file.</param>
         /// <param name="etag">The <see cref="EntityTagHeaderValue"/> provided in the <see cref="HttpContext.Request"/>.</param>
         /// <returns>A collection of <see cref="RangeItemHeaderValue"/> containing the ranges parsed from the <paramref name="requestHeaders"/>.</returns>
-        public static ICollection<RangeItemHeaderValue> ParseRange(HttpContext context, RequestHeaders requestHeaders, DateTimeOffset lastModified, EntityTagHeaderValue etag)
+        public static ICollection<RangeItemHeaderValue> ParseRange(HttpContext context, RequestHeaders requestHeaders, DateTimeOffset? lastModified = null, EntityTagHeaderValue etag = null)
         {
             var rawRangeHeader = context.Request.Headers[HeaderNames.Range];
             if (StringValues.IsNullOrEmpty(rawRangeHeader))
@@ -62,15 +62,16 @@ namespace Microsoft.AspNetCore.Http.Extensions
                 bool ignoreRangeHeader = false;
                 if (ifRangeHeader.LastModified.HasValue)
                 {
-                    if (lastModified > ifRangeHeader.LastModified)
+                    if (lastModified != null && lastModified > ifRangeHeader.LastModified)
                     {
                         ignoreRangeHeader = true;
                     }
                 }
-                else if (ifRangeHeader.EntityTag != null && !ifRangeHeader.EntityTag.Compare(etag, useStrongComparison: true))
+                else if (etag != null && ifRangeHeader.EntityTag != null && !ifRangeHeader.EntityTag.Compare(etag, useStrongComparison: true))
                 {
                     ignoreRangeHeader = true;
                 }
+
                 if (ignoreRangeHeader)
                 {
                     return null;

@@ -96,5 +96,24 @@ namespace Microsoft.AspNetCore.Http.Extensions
             Assert.Equal(1, parsedRange.From);
             Assert.Equal(2, parsedRange.To);
         }
+
+        [Fact]
+        public void ParseRange_ReturnsRangeWhenLastModifiedAndEtagNull()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            var range = new RangeHeaderValue(1, 2);
+            httpContext.Request.Headers[HeaderNames.Range] = range.ToString();
+            var lastModified = new RangeConditionHeaderValue(DateTime.Now);
+            httpContext.Request.Headers[HeaderNames.IfRange] = lastModified.ToString();
+
+            // Act
+            var parsedRangeResult = RangeParser.ParseRange(httpContext, httpContext.Request.GetTypedHeaders());
+
+            // Assert
+            var parsedRange = Assert.Single(parsedRangeResult);
+            Assert.Equal(1, parsedRange.From);
+            Assert.Equal(2, parsedRange.To);
+        }
     }
 }
