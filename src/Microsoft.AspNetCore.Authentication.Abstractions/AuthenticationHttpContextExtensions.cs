@@ -48,6 +48,15 @@ namespace Microsoft.AspNetCore.Authentication
             context.ChallengeAsync(scheme: null, properties: null);
 
         /// <summary>
+        /// Extension method for authenticate using the <see cref="AuthenticationOptions.DefaultChallengeScheme"/> scheme.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> context.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
+        /// <returns>The task.</returns>
+        public static Task ChallengeAsync(this HttpContext context, AuthenticationProperties properties) =>
+            context.ChallengeAsync(scheme: null, properties: properties);
+
+        /// <summary>
         /// Extension method for Challenge.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
