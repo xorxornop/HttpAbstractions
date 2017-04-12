@@ -90,6 +90,23 @@ namespace Microsoft.AspNetCore.Authentication
         /// Extension method for Forbid.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
+        /// <returns>The task.</returns>
+        public static Task ForbidAsync(this HttpContext context) =>
+            context.ForbidAsync(scheme: null, properties: null);
+
+        /// <summary>
+        /// Extension method for Forbid.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> context.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
+        /// <returns>The task.</returns>
+        public static Task ForbidAsync(this HttpContext context, AuthenticationProperties properties) =>
+            context.ForbidAsync(scheme: null, properties: properties);
+
+        /// <summary>
+        /// Extension method for Forbid.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
