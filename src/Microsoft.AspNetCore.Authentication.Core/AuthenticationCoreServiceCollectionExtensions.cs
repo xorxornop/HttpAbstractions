@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
+            services.AddOptions();
             services.TryAddScoped<IAuthenticationService, AuthenticationService>();
             services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
             services.TryAddScoped<IAuthenticationHandlerProvider, AuthenticationHandlerProvider>();
